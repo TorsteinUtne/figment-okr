@@ -1,0 +1,1659 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Figment Strategi og OKR</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gabarito:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Figment-palett fra figment.no. Én mørk verden. Layout: sticky toppmeny, fire visninger, skuff til høyre for redigering. */
+:root{
+  --bg:#1c1820; --bg-2:#231e29; --surface:#2a2431; --surface-2:#342c3c;
+  --ink:#f4ede4; --ink-2:#bcb0c2; --ink-3:#8c8195;
+  --line:rgba(244,237,228,.09); --line-2:rgba(244,237,228,.18);
+  --accent:#4BC2A2; --accent-ink:#0f1f1a; --accent-soft:rgba(75,194,162,.14); --accent-text:#7fd6bd;
+  --lilac:#d2c6dc; --plum:#2b293b;
+  --ok:#93d27c; --warn:#f1bb5a; --bad:#f07a74; --none:#8c8195;
+  --font-d:'Gabarito',system-ui,sans-serif; --font-b:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --r:14px; --r-sm:10px; --shadow:0 18px 40px -20px rgba(0,0,0,.6);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-b);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+h1,h2,h3{font-family:var(--font-d);font-weight:600;letter-spacing:-.02em;margin:0;text-wrap:balance}
+.eyebrow{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);font-weight:600}
+.num{font-variant-numeric:tabular-nums}
+.muted{color:var(--ink-2)} .faint{color:var(--ink-3)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* Topp */
+header.top{position:sticky;top:0;z-index:40;background:rgba(28,24,32,.88);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.top-in{max-width:1400px;margin:0 auto;padding:0 24px;height:62px;display:flex;align-items:center;gap:28px}
+.brand{display:flex;align-items:baseline;gap:10px;white-space:nowrap}
+.brand b{font-family:var(--font-d);font-size:21px;font-weight:700;letter-spacing:-.03em}
+.brand span{color:var(--ink-3);font-size:13px}
+nav.tabs{display:flex;gap:4px;height:100%}
+nav.tabs a{display:flex;align-items:center;gap:8px;padding:0 14px;color:var(--ink-2);text-decoration:none;font-weight:500;border-bottom:2px solid transparent;margin-bottom:-1px}
+nav.tabs a:hover{color:var(--ink)}
+nav.tabs a[aria-current="page"]{color:var(--ink);border-bottom-color:var(--accent)}
+nav.tabs a kbd{font:500 10px var(--font-b);color:var(--ink-3);border:1px solid var(--line-2);border-radius:4px;padding:0 4px}
+.top-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.sync{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--ink-3);white-space:nowrap}
+.sync i{width:7px;height:7px;border-radius:50%;background:var(--ink-3)}
+.sync.live i{background:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.sync.saving i{background:var(--warn)} .sync.err i{background:var(--bad)} .sync.err{color:var(--bad)}
+.sel{background:var(--surface);border:1px solid var(--line-2);border-radius:999px;padding:6px 30px 6px 12px;appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--ink-2) 50%),linear-gradient(135deg,var(--ink-2) 50%,transparent 50%);background-position:calc(100% - 15px) 52%,calc(100% - 10px) 52%;background-size:5px 5px;background-repeat:no-repeat}
+.sel:hover{border-color:var(--ink-3)}
+.iconbtn{width:34px;height:34px;border-radius:50%;border:1px solid var(--line-2);background:transparent;color:var(--ink-2);display:grid;place-items:center;font-weight:600}
+.iconbtn:hover{color:var(--ink);border-color:var(--ink-3)}
+
+main{max-width:1400px;margin:0 auto;padding:28px 24px 80px}
+.banner{max-width:1400px;margin:14px auto 0;padding:10px 16px;border-radius:var(--r-sm);background:var(--plum);border:1px solid var(--line-2);color:var(--lilac);font-size:13px}
+.banner:empty{display:none}
+
+/* Knapper */
+.btn{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:7px 14px;border:1px solid var(--line-2);background:transparent;color:var(--ink);font-weight:500;font-size:13px;white-space:nowrap}
+.btn:hover{border-color:var(--ink-3);background:rgba(244,237,228,.04)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.ghost{border-color:transparent;color:var(--ink-2)} .btn.ghost:hover{color:var(--ink);background:rgba(244,237,228,.05)}
+.btn.danger{color:var(--bad);border-color:rgba(240,122,116,.4)}
+.seg{display:inline-flex;background:var(--bg-2);border:1px solid var(--line);border-radius:999px;padding:3px}
+.seg button{border:0;background:transparent;color:var(--ink-2);padding:5px 12px;border-radius:999px;font-size:12.5px;font-weight:500}
+.seg button[aria-pressed="true"]{background:var(--surface-2);color:var(--ink)}
+.toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-bottom:18px}
+.toolbar .grow{flex:1}
+.view-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:20px}
+.view-head h1{font-size:30px}
+.view-head p{margin:4px 0 0;color:var(--ink-2);max-width:68ch}
+
+/* Byggeklosser */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px 20px}
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;padding:2px 8px;border-radius:999px;background:rgba(244,237,228,.07);color:var(--ink-2);white-space:nowrap;line-height:1.6}
+.chip.code{background:var(--accent-soft);color:var(--accent-text);font-variant-numeric:tabular-nums}
+.chip.code.o{background:rgba(210,198,220,.14);color:var(--lilac)}
+.chip.warnc{background:rgba(241,187,90,.12);color:var(--warn)}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:500;padding:3px 10px 3px 8px;border-radius:999px;white-space:nowrap;border:1px solid transparent}
+.pill::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.st-ok{color:var(--ok);background:rgba(147,210,124,.1)} .st-warn{color:var(--warn);background:rgba(241,187,90,.1)}
+.st-bad{color:var(--bad);background:rgba(240,122,116,.1)} .st-none{color:var(--ink-3);background:rgba(140,129,149,.12)}
+.st-prog{color:#8fb8ff;background:rgba(143,184,255,.1)} .st-done{color:var(--accent);background:var(--accent-soft)}
+select.pill{appearance:none;cursor:pointer;padding-right:10px}
+select.pill:hover{border-color:currentColor}
+select.pill option{color:var(--ink);background:var(--surface)}
+.av{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;font-size:10.5px;font-weight:600;color:#1c1820;flex:none}
+.av.none{background:transparent!important;border:1px dashed var(--ink-3);color:var(--ink-3)}
+.owner{display:inline-flex;align-items:center;gap:8px;min-width:0}
+.owner span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.owner.missing span{color:var(--ink-3);font-style:italic}
+
+/* Fremdrift */
+.prog{display:flex;align-items:center;gap:10px;min-width:0}
+.pbar{position:relative;flex:1;height:8px;border-radius:999px;background:rgba(244,237,228,.08);min-width:60px}
+.pbar .pfill{position:absolute;inset:0 auto 0 0;border-radius:999px;background:var(--accent)}
+.pbar.ok .pfill{background:var(--ok)} .pbar.warn .pfill{background:var(--warn)} .pbar.bad .pfill{background:var(--bad)} .pbar.none .pfill{background:var(--accent)}
+.pbar .pexp{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--ink);opacity:.55;border-radius:2px}
+.pnum{font-variant-numeric:tabular-nums;font-weight:600;font-size:13px;min-width:38px;text-align:right}
+.pnone{font-size:12px;color:var(--ink-3);font-style:italic;white-space:nowrap}
+
+/* Oversikt */
+.vision{display:grid;grid-template-columns:1fr auto;gap:24px;align-items:center;padding:26px 28px;border-radius:18px;background:linear-gradient(120deg,var(--plum),var(--bg-2) 70%);border:1px solid var(--line);margin-bottom:22px}
+.vision h1{font-size:clamp(22px,2.6vw,32px);font-weight:600;max-width:34ch;margin-top:6px}
+.vision .meta{text-align:right;color:var(--ink-2);font-size:13px}
+.vision .meta strong{display:block;font-family:var(--font-d);font-size:22px;color:var(--ink);font-weight:600}
+.prios{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.prio{display:inline-flex;gap:8px;align-items:center;font-size:12.5px;padding:5px 12px 5px 6px;border-radius:999px;background:rgba(28,24,32,.45);border:1px solid var(--line);color:var(--ink-2)}
+.prio b{font-size:11px;color:var(--lilac);background:rgba(210,198,220,.12);padding:1px 7px;border-radius:999px}
+.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:22px}
+.tile .big{font-family:var(--font-d);font-size:34px;font-weight:600;letter-spacing:-.02em;line-height:1.1;margin:8px 0 4px;font-variant-numeric:tabular-nums}
+.tile .big small{font-size:16px;color:var(--ink-3);font-weight:500}
+.tile .sub{font-size:12.5px;color:var(--ink-2)}
+.stack{display:flex;height:10px;border-radius:999px;overflow:hidden;background:rgba(244,237,228,.06);margin:14px 0 10px;gap:2px}
+.stack span{display:block;height:100%}
+.legend{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px;color:var(--ink-2)}
+.legend i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px}
+.dash{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:22px}
+.sec-h{display:flex;align-items:baseline;justify-content:space-between;margin:0 0 12px}
+.sec-h h2{font-size:18px}
+.objcards{display:grid;gap:12px}
+.objcard{display:grid;gap:12px;cursor:pointer;transition:border-color .15s}
+.objcard:hover{border-color:var(--line-2)}
+.objcard .row1 .owner{flex:none;max-width:40%}
+.objcard .row1{display:flex;gap:12px;align-items:flex-start;justify-content:space-between}
+.objcard h3{font-size:16.5px;font-weight:600;line-height:1.35}
+.objcard .facts{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:12.5px;color:var(--ink-2);align-items:center}
+.krdots{display:flex;flex-wrap:wrap;gap:6px}
+.krdot{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;color:var(--ink-2);padding:2px 8px 2px 6px;border-radius:999px;background:rgba(244,237,228,.05)}
+.krdot i{width:7px;height:7px;border-radius:50%}
+.attn{display:grid;gap:8px}
+.attn-item{display:grid;grid-template-columns:4px 1fr auto;gap:12px;align-items:center;padding:10px 12px 10px 0;border-radius:var(--r-sm);background:var(--bg-2);border:1px solid var(--line);cursor:pointer;text-align:left;width:100%;color:inherit}
+.attn-item:hover{border-color:var(--line-2)}
+.attn-item .stripe{align-self:stretch;border-radius:0 3px 3px 0}
+.attn-item .t{font-weight:500;font-size:13.5px;line-height:1.35}
+.attn-item .d{font-size:12px;color:var(--ink-2)}
+.attn-item .when{font-size:12px;font-weight:600;font-variant-numeric:tabular-nums}
+.list{display:grid}
+.li{display:grid;grid-template-columns:62px 1fr auto;gap:12px;align-items:center;padding:9px 4px;border-bottom:1px solid var(--line);cursor:pointer}
+.li:last-child{border-bottom:0}
+.li:hover .t{color:var(--accent-text)}
+.li .date{font-size:12px;font-weight:600;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.li .t{font-size:13.5px;line-height:1.35}
+.empty{padding:22px;text-align:center;color:var(--ink-3);font-size:13px}
+
+/* OKR-tre */
+.tree-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--bg-2)}
+table.tree{width:100%;min-width:1040px;border-collapse:collapse;table-layout:fixed}
+.tree th{position:sticky;top:0;text-align:left;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);font-weight:600;padding:12px 14px;border-bottom:1px solid var(--line-2);background:var(--bg-2)}
+.tree td{padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:middle}
+.tree tr.o td{background:var(--surface);padding-top:14px;padding-bottom:14px}
+.tree tr.o td:first-child{border-left:3px solid var(--lilac)}
+.tree tr.k td:first-child{border-left:3px solid transparent}
+.tree tr.t td{padding-top:7px;padding-bottom:7px;font-size:13px}
+.tree tr.add td{padding:4px 14px 8px}
+.tree tr:hover:not(.add) td{background-color:rgba(244,237,228,.025)}
+.tree tr.o:hover td{background:#2e2836}
+.namecell{display:flex;align-items:flex-start;gap:8px;min-width:0}
+.namecell .txt{min-width:0;cursor:pointer}
+.namecell .txt:hover .ttl{color:var(--accent-text)}
+.ttl{line-height:1.4}
+tr.o .ttl{font-family:var(--font-d);font-size:15.5px;font-weight:600}
+tr.k .ttl{font-size:13.5px}
+.caret{flex:none;width:22px;height:22px;border:0;background:transparent;color:var(--ink-3);border-radius:6px;display:grid;place-items:center;margin-top:-1px;transition:transform .15s}
+.caret:hover{color:var(--ink);background:rgba(244,237,228,.06)}
+.caret[aria-expanded="false"]{transform:rotate(-90deg)}
+.caret.ph{visibility:hidden}
+.tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:5px}
+.vals{display:flex;align-items:center;gap:6px;font-variant-numeric:tabular-nums;font-size:13px;color:var(--ink-2)}
+.vals .arrow{color:var(--ink-3)}
+.vals input{width:62px;text-align:center;background:var(--bg);border:1px solid var(--line-2);border-radius:8px;padding:3px 4px;color:var(--ink);font-weight:600}
+.vals input:hover{border-color:var(--ink-3)} .vals input:focus{border-color:var(--accent);outline:none}
+.tdot{width:8px;height:8px;border-radius:50%;flex:none;margin:6px 6px 0 2px}
+.addlink{border:0;background:transparent;color:var(--ink-3);font-size:12.5px;padding:3px 6px;border-radius:6px}
+.addlink:hover{color:var(--accent-text);background:var(--accent-soft)}
+.due{font-size:12.5px;font-variant-numeric:tabular-nums;color:var(--ink-2);white-space:nowrap}
+.due.overdue{color:var(--bad);font-weight:600} .due.soon{color:var(--warn);font-weight:600}
+.note{font-size:12.5px;color:var(--ink-3);margin-top:12px;max-width:90ch}
+
+/* Tidslinje */
+.tl-scroll{overflow:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--bg-2);max-height:calc(100vh - 230px);min-height:300px}
+.tl{position:relative;width:max-content;min-width:100%}
+.tl-row{display:flex;position:relative;border-bottom:1px solid var(--line)}
+.tl-lab{position:sticky;left:0;z-index:3;width:var(--lw);flex:none;background:var(--bg-2);border-right:1px solid var(--line-2);display:flex;align-items:center;gap:6px;padding:0 10px 0 8px;min-width:0}
+.tl-row.o .tl-lab{background:var(--surface)} .tl-row.o{background:rgba(42,36,49,.55)}
+.tl-lab .txt{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;font-size:13px}
+.tl-lab .txt:hover{color:var(--accent-text)}
+.tl-row.o .tl-lab .txt{font-family:var(--font-d);font-weight:600;font-size:14px}
+.tl-row.t .tl-lab .txt{color:var(--ink-2);font-size:12.5px}
+.tl-track{position:relative;flex:none}
+.tl-head{position:sticky;top:0;z-index:5;background:var(--bg-2);border-bottom:1px solid var(--line-2)}
+.tl-head .tl-lab{z-index:6;align-items:flex-end;padding-bottom:8px}
+.tl-q,.tl-m{position:absolute;font-size:11px;color:var(--ink-3);white-space:nowrap;padding-left:6px;border-left:1px solid var(--line)}
+.tl-q{top:6px;height:18px;font-weight:600;color:var(--ink-2);letter-spacing:.06em}
+.tl-m{top:28px;height:22px;line-height:22px}
+.tl-grid{position:absolute;top:0;bottom:0;pointer-events:none;z-index:0}
+.tl-grid i{position:absolute;top:0;bottom:0;width:1px;background:var(--line)}
+.tl-grid i.q{background:var(--line-2)}
+.tl-today{position:absolute;top:0;bottom:0;width:2px;background:var(--accent);z-index:2;pointer-events:none}
+.tl-today span{position:sticky;top:0;display:block;transform:translateX(-50%);margin-left:1px;background:var(--accent);color:var(--accent-ink);font-size:10.5px;font-weight:700;padding:1px 6px;border-radius:999px;white-space:nowrap;width:max-content}
+.bar{position:absolute;top:50%;transform:translateY(-50%);border-radius:999px;cursor:pointer;display:flex;align-items:center;overflow:visible}
+.bar .fill{position:absolute;inset:0 auto 0 0;border-radius:999px}
+.bar .lbl{position:absolute;left:calc(100% + 8px);white-space:nowrap;font-size:12px;color:var(--ink-2);display:flex;align-items:center;gap:6px;pointer-events:none}
+.bar.obj{height:16px;background:rgba(210,198,220,.16);border:1px solid rgba(210,198,220,.3)}
+.bar.obj .fill{background:var(--lilac);opacity:.8}
+.bar.kr{height:10px;background:rgba(244,237,228,.07);border:1px solid var(--line-2)}
+.bar.task{height:18px;background:var(--surface-2);border:1px solid var(--line-2);padding:0 2px}
+.bar.task .fill{background:transparent}
+.bar.task.s-prog{background:rgba(143,184,255,.22);border-color:rgba(143,184,255,.5)}
+.bar.task.s-block{background:rgba(240,122,116,.2);border-color:rgba(240,122,116,.55)}
+.bar.task.s-done{background:var(--accent-soft);border-color:rgba(75,194,162,.45)}
+.bar.task.over{box-shadow:0 0 0 1px var(--bad)}
+.bar:hover{filter:brightness(1.25)}
+.msw{position:absolute;top:50%;height:0;cursor:pointer}
+.msw:hover .ms{filter:brightness(1.25)}
+.msw .lbl{position:absolute;left:12px;top:0;transform:translateY(-50%);white-space:nowrap;font-size:12px;color:var(--ink-2);display:flex;gap:6px;align-items:center}
+.ms{position:absolute;left:0;top:0;width:12px;height:12px;transform:translate(-50%,-50%) rotate(45deg);background:var(--ink-2);border-radius:2px;display:block}
+.ms.s-prog{background:#8fb8ff} .ms.s-block{background:var(--bad)} .ms.s-done{background:var(--accent)} .ms.over{box-shadow:0 0 0 2px var(--bad)}
+.tl-legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12px;color:var(--ink-2);margin-top:12px;align-items:center}
+.tl-legend .sw{display:inline-block;width:18px;height:9px;border-radius:999px;margin-right:6px;vertical-align:middle}
+
+/* Tavle */
+.board{display:grid;gap:14px;overflow-x:auto;padding-bottom:6px;align-items:start}
+.col{background:var(--bg-2);border:1px solid var(--line);border-radius:var(--r);display:flex;flex-direction:column;min-height:240px;transition:border-color .15s,background .15s}
+.col.drop{border-color:var(--accent);background:rgba(75,194,162,.05)}
+.col-h{display:flex;align-items:center;gap:8px;padding:14px 14px 10px;font-weight:600;font-size:13.5px}
+.col-h .n{color:var(--ink-3);font-weight:500;font-variant-numeric:tabular-nums}
+.col-h i{width:9px;height:9px;border-radius:50%}
+.cards{display:grid;gap:8px;padding:0 10px 10px}
+.kcard{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:11px 12px;display:grid;gap:8px;cursor:grab;position:relative;text-align:left;color:inherit;width:100%}
+.kcard:hover{border-color:var(--line-2)}
+.kcard.dragging{opacity:.4}
+.kcard.blocked{border-left:3px solid var(--bad)}
+.kcard .top{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.kcard .t{font-size:13.5px;font-weight:500;line-height:1.38}
+.kcard .next{font-size:12px;color:var(--ink-2);line-height:1.4}
+.kcard .bot{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12px}
+.prio-tag{font-size:10.5px;font-weight:700;color:var(--ink-3);letter-spacing:.04em}
+.prio-tag.p1{color:var(--warn)}
+.qadd{margin:0 10px 12px;display:flex}
+.qadd input{flex:1;background:transparent;border:1px dashed var(--line-2);border-radius:10px;padding:8px 10px;font-size:13px;color:var(--ink)}
+.qadd input::placeholder{color:var(--ink-3)}
+.qadd input:focus{border-style:solid;border-color:var(--accent);outline:none}
+.search{background:var(--surface);border:1px solid var(--line-2);border-radius:999px;padding:6px 14px;min-width:220px}
+.search:focus{outline:none;border-color:var(--accent)}
+
+/* Skuff */
+.scrim{position:fixed;inset:0;background:rgba(10,8,12,.55);z-index:60;opacity:0;pointer-events:none;transition:opacity .2s}
+.scrim.on{opacity:1;pointer-events:auto}
+aside.drawer{border-top:3px solid var(--c,var(--accent));position:fixed;top:0;right:0;bottom:0;width:min(480px,100vw);background:var(--bg-2);border-left:1px solid var(--line-2);z-index:61;transform:translateX(100%);transition:transform .22s ease;display:flex;flex-direction:column;box-shadow:var(--shadow)}
+aside.drawer.on{transform:none}
+.dr-h{display:flex;align-items:center;gap:10px;padding:18px 22px;border-bottom:1px solid var(--line)}
+.dr-h .k{font-size:12px;color:var(--ink-3);font-weight:600;letter-spacing:.1em;text-transform:uppercase}
+.dr-h .x{margin-left:auto}
+.dr-b{padding:20px 22px 28px;overflow:auto;flex:1;display:grid;gap:16px;align-content:start}
+.dr-f{padding:14px 22px;border-top:1px solid var(--line);display:flex;align-items:center;gap:10px;font-size:12px;color:var(--ink-3)}
+.dr-f .grow{flex:1}
+.f{display:grid;gap:6px}
+.f label,.f .lab{font-size:12px;font-weight:600;color:var(--ink-2)}
+.f .hint{font-size:11.5px;color:var(--ink-3)}
+.f input,.f select,.f textarea{width:100%;background:var(--surface);border:1px solid var(--line-2);border-radius:10px;padding:9px 11px;color:var(--ink)}
+.f textarea{resize:vertical;min-height:70px;line-height:1.45}
+.f textarea.title{font-family:var(--font-d);font-size:17px;font-weight:600;min-height:64px}
+.f input:focus,.f select:focus,.f textarea:focus{outline:none;border-color:var(--accent)}
+.f input:disabled,.f select:disabled,.f textarea:disabled{opacity:.75}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.checks{display:flex;flex-wrap:wrap;gap:8px}
+.checks label{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;padding:5px 10px;border:1px solid var(--line-2);border-radius:999px;cursor:pointer;color:var(--ink-2);font-weight:500}
+.checks input{accent-color:var(--accent);width:auto}
+.checks label:has(input:checked){border-color:var(--accent);color:var(--ink);background:var(--accent-soft)}
+.qa{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:grid;gap:6px;font-size:12.5px}
+.qa .h{font-weight:600;color:var(--ink-2);font-size:12px}
+.qa .c{display:flex;gap:8px;align-items:center;color:var(--ink-2)}
+.qa .c b{width:16px;height:16px;border-radius:50%;display:grid;place-items:center;font-size:10px;flex:none;border:1px solid var(--ink-3);color:transparent}
+.qa .c.y b{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.qa .c.y{color:var(--ink)}
+.confirm{display:flex;gap:8px;align-items:center}
+.help h3{font-size:15px;margin:6px 0 2px}
+.help p,.help li{color:var(--ink-2);font-size:13px;line-height:1.55}
+.help ul{margin:4px 0;padding-left:18px}
+.ladder{display:grid;gap:6px}
+.ladder div{display:grid;grid-template-columns:130px 1fr;gap:10px;padding:8px 12px;border-radius:10px;background:var(--surface);font-size:12.5px}
+.ladder b{color:var(--ink)} .ladder span{color:var(--ink-2)}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--surface-2);border:1px solid var(--line-2);padding:9px 16px;border-radius:999px;font-size:13px;z-index:80;box-shadow:var(--shadow)}
+.toast:empty{display:none}
+.skeleton{padding:60px;text-align:center;color:var(--ink-3)}
+
+/* ---------- Fokusfilter og redigerbare felt ---------- */
+.fbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 12px}
+.fbar .eyebrow{margin-right:4px;min-width:64px}
+.fbar.sub{padding:10px 12px;border-radius:12px;background:color-mix(in srgb,var(--c) 8%,var(--bg-2));border:1px solid color-mix(in srgb,var(--c) 25%,transparent);margin-top:-2px;margin-bottom:16px}
+.fchip{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line-2);background:var(--bg-2);color:var(--ink-2);border-radius:999px;padding:5px 12px;font-size:12.5px;font-weight:600;max-width:320px}
+.fchip span{font-weight:400;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fchip i{width:9px;height:9px;border-radius:3px;background:var(--c);flex:none}
+.fchip:hover{border-color:color-mix(in srgb,var(--c,var(--ink-3)) 70%,transparent);color:var(--ink)}
+.fchip[aria-pressed="true"]{background:color-mix(in srgb,var(--c,var(--ink-2)) 22%,var(--bg-2));border-color:var(--c,var(--ink-2));color:var(--ink)}
+.inl{width:100%;min-width:0;background:transparent;border:1px solid transparent;border-radius:7px;padding:4px 7px;color:var(--ink);font-size:13px;transition:border-color .12s,background .12s}
+.inl::placeholder{color:var(--ink-3);font-style:italic}
+.inl:hover{border-color:var(--line-2);background:rgba(244,237,228,.03)}
+.inl:focus{outline:none;border-color:var(--accent);background:var(--bg)}
+.inl.date{width:128px;font-variant-numeric:tabular-nums;font-size:12.5px;color:var(--ink-2);color-scheme:dark}
+.inl.date.empty{color:var(--ink-3)}
+.inl.date.overdue{color:var(--bad);font-weight:600} .inl.date.soon{color:var(--warn);font-weight:600}
+.inl.numin{width:58px;text-align:center;font-weight:600;border-color:var(--line-2);background:var(--bg)}
+.inl.unitin{width:62px;font-size:12px;color:var(--ink-2)}
+.owner.ed{width:100%}
+.owner.ed .inl{font-size:12.5px}
+.period{display:flex;align-items:center;gap:2px}.period .inl.date{width:118px}
+.vals .inl.numin{width:54px}
+.pen{flex:none;border:0;background:transparent;color:var(--ink-3);opacity:0;border-radius:6px;width:24px;height:24px;font-size:13px}
+tr:hover .pen,.pen:focus-visible{opacity:1}
+.pen:hover{color:var(--ink);background:rgba(244,237,228,.07)}
+.kcard{cursor:grab}
+.kcard .bot{flex-wrap:wrap}
+.kcard .bot .owner.ed{flex:1;min-width:120px;width:auto}
+.kcard .bot .inl.date{width:122px;text-align:right}
+.kcard .chip{border:0;cursor:pointer;font-family:inherit}
+.chip.krc{background:color-mix(in srgb,var(--c) 10%,transparent);color:color-mix(in srgb,var(--c) 60%,white);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 40%,transparent)}
+.kcard .chip:hover{filter:brightness(1.2)}
+.krline{font-size:11.5px;color:color-mix(in srgb,var(--c) 50%,var(--ink-2));line-height:1.35}
+.tl-row.k{background:color-mix(in srgb,var(--c) 5%,transparent)}
+.tl-row.t{background:color-mix(in srgb,var(--c) 3%,transparent)}
+.tl-row.k .tl-lab{background:color-mix(in srgb,var(--c) 8%,var(--bg-2))}
+.tl-row.t .tl-lab{background:color-mix(in srgb,var(--c) 4%,var(--bg-2))}
+.tl-row.k .tl-lab .txt,.tl-row.t .tl-lab .txt{color:color-mix(in srgb,var(--c) 30%,var(--ink))}
+.bar.kr .fill{background:var(--c)}
+.bar.kr .lbl{color:color-mix(in srgb,var(--c) 55%,white)}
+.sdot{display:inline-block;width:7px;height:7px;border-radius:50%}
+.tl-gap{height:8px;background:var(--bg);border-bottom:1px solid var(--line)}
+
+/* ---------- Personvelger og kolonner ---------- */
+.ownerbtn{display:inline-flex;align-items:center;gap:8px;max-width:100%;min-width:0;border:1px solid transparent;background:transparent;color:var(--ink);border-radius:999px;padding:3px 10px 3px 3px;font-size:12.5px;text-align:left}
+.ownerbtn span:not(.av){overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ownerbtn:hover{border-color:var(--line-2);background:rgba(244,237,228,.04)}
+.ownerbtn.none{color:var(--ink-3);border:1px dashed var(--line-2)}
+.ownerbtn.none:hover{color:var(--accent-text);border-color:var(--accent);background:var(--accent-soft)}
+.ownerbtn .plus{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:rgba(244,237,228,.07);font-weight:700;font-size:14px;flex:none}
+.ownerbtn.none:hover .plus{background:var(--accent);color:var(--accent-ink)}
+.ownerbtn.field{width:100%;border-radius:10px;padding:6px 10px 6px 6px;background:var(--surface);border:1px solid var(--line-2)}
+.pop{position:fixed;z-index:90;background:var(--surface-2);border:1px solid var(--line-2);border-radius:14px;box-shadow:0 24px 50px -18px rgba(0,0,0,.75);padding:8px;display:grid;gap:6px}
+.pop[hidden]{display:none}
+.popq{width:100%;background:var(--bg);border:1px solid var(--line-2);border-radius:9px;padding:8px 10px;color:var(--ink)}
+.popq:focus{outline:none;border-color:var(--accent)}
+.poplist{max-height:300px;overflow:auto;display:grid;gap:1px}
+.pophead{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);font-weight:600;padding:8px 8px 4px}
+.pophint{padding:12px 8px;color:var(--ink-3);font-size:12.5px}
+.popitem{display:flex;align-items:center;gap:10px;width:100%;border:0;background:transparent;color:var(--ink);text-align:left;padding:7px 8px;border-radius:9px;font-size:13px}
+.popitem:hover,.popitem.on{background:rgba(244,237,228,.07)}
+.popitem.cur{background:var(--accent-soft)}
+.popitem .pn{display:grid;min-width:0;flex:1}
+.popitem small{color:var(--ink-3);font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.popitem .ck{color:var(--accent);font-weight:700}
+.popitem.rm{color:var(--ink-2);border-top:1px solid var(--line);border-radius:0 0 9px 9px;margin-top:4px}
+.col-h{gap:6px}
+.colname{flex:1;min-width:0;background:transparent;border:1px solid transparent;border-radius:7px;padding:2px 6px;margin-left:-4px;color:var(--ink);font-weight:600;font-size:13.5px}
+.colname:hover{border-color:var(--line-2)} .colname:focus{outline:none;border-color:var(--sc);background:var(--bg)}
+.colctl{display:inline-flex;gap:2px;opacity:0;transition:opacity .12s}
+.col:hover .colctl,.colctl:focus-within{opacity:1}
+.colctl button{border:0;background:transparent;color:var(--ink-3);width:24px;height:24px;border-radius:6px;font-size:15px;line-height:1}
+.colctl button:hover{color:var(--ink);background:rgba(244,237,228,.08)}
+.addcol{border:1px dashed var(--line-2);background:transparent;color:var(--ink-3);border-radius:var(--r);min-height:120px;font-weight:600}
+.addcol:hover{color:var(--accent-text);border-color:var(--accent);background:var(--accent-soft)}
+.colrow{border:1px solid var(--line);border-left:4px solid var(--sc);border-radius:12px;background:var(--surface);padding:10px 12px;display:grid;gap:8px}
+.colrow-h{display:flex;align-items:center;gap:8px}
+.colrow-h input{flex:1;background:var(--bg);border:1px solid var(--line-2);border-radius:8px;padding:7px 10px;font-weight:600}
+.colrow-h input:focus,.colrow-b select:focus{outline:none;border-color:var(--accent)}
+.colrow .mv{display:inline-flex;flex-direction:column}
+.colrow .mv button{border:0;background:transparent;color:var(--ink-3);height:16px;width:22px;font-size:11px;line-height:1;border-radius:4px}
+.colrow .mv button:hover:not(:disabled){color:var(--ink);background:rgba(244,237,228,.08)}
+.colrow .mv button:disabled{opacity:.25}
+.colrow-b{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.colrow-b select{background:var(--bg);border:1px solid var(--line-2);border-radius:8px;padding:5px 8px}
+.minisw{display:inline-flex;gap:4px}
+.minisw button{width:18px;height:18px;border-radius:50%;border:2px solid transparent;background:var(--sw);box-shadow:inset 0 0 0 2px var(--surface)}
+.minisw button[aria-pressed="true"]{border-color:var(--ink)}
+
+/* ---------- Farger per Objective (--c) ---------- */
+.vision{background:radial-gradient(620px 260px at 88% -10%,rgba(75,194,162,.26),transparent 70%),radial-gradient(560px 300px at -5% 110%,rgba(169,139,245,.22),transparent 70%),radial-gradient(400px 200px at 55% 120%,rgba(99,179,237,.14),transparent 70%),linear-gradient(120deg,var(--plum),var(--bg-2) 75%);border-color:rgba(244,237,228,.12)}
+.prio{border-color:color-mix(in srgb,var(--c,var(--line-2)) 45%,transparent);background:color-mix(in srgb,var(--c,#000) 12%,rgba(28,24,32,.5));color:var(--ink)}
+.prio b{background:color-mix(in srgb,var(--c,var(--lilac)) 28%,transparent);color:color-mix(in srgb,var(--c,var(--lilac)) 70%,white)}
+.tile{position:relative;overflow:hidden}
+.tile::after{content:"";position:absolute;width:220px;height:220px;right:-90px;top:-110px;border-radius:50%;background:radial-gradient(closest-side,color-mix(in srgb,var(--c) 30%,transparent),transparent);pointer-events:none}
+.tile .eyebrow{display:flex;align-items:center;gap:8px}
+.tile .eyebrow::before{content:"";width:8px;height:8px;border-radius:3px;background:var(--c)}
+.chip.oc{background:color-mix(in srgb,var(--c) 20%,transparent);color:color-mix(in srgb,var(--c) 72%,white)}
+.pbar.oc .pfill{background:linear-gradient(90deg,color-mix(in srgb,var(--c) 55%,transparent),var(--c))}
+.pbar.oc{background:color-mix(in srgb,var(--c) 12%,rgba(244,237,228,.05))}
+.objcard{position:relative;overflow:hidden;border-color:color-mix(in srgb,var(--c) 28%,transparent);background:linear-gradient(105deg,color-mix(in srgb,var(--c) 15%,var(--surface)) 0%,var(--surface) 60%)}
+.objcard::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--c)}
+.objcard:hover{border-color:color-mix(in srgb,var(--c) 60%,transparent)}
+.objcard h3{color:var(--ink)}
+.li .date{display:inline-block;text-align:center;padding:4px 0;border-radius:8px;background:color-mix(in srgb,var(--c,var(--ink-3)) 18%,transparent);color:color-mix(in srgb,var(--c,var(--ink-2)) 75%,white)}
+.tree tr.o td{background:color-mix(in srgb,var(--c) 11%,var(--surface))}
+.tree tr.o:hover td{background:color-mix(in srgb,var(--c) 16%,var(--surface))}
+.tree tr.o td:first-child{border-left:4px solid var(--c)}
+.tree tr.k td:first-child,.tree tr.t td:first-child,.tree tr.add td:first-child{border-left:4px solid color-mix(in srgb,var(--c) 35%,transparent)}
+.tree tr.k td{background:color-mix(in srgb,var(--c) 3%,transparent)}
+.tl-row.o{background:color-mix(in srgb,var(--c) 9%,transparent)}
+.tl-row.o .tl-lab{background:color-mix(in srgb,var(--c) 13%,var(--surface));box-shadow:inset 4px 0 0 var(--c)}
+.tl-row.k .tl-lab,.tl-row.t .tl-lab{box-shadow:inset 4px 0 0 color-mix(in srgb,var(--c) 35%,transparent)}
+.bar.obj{height:18px;background:color-mix(in srgb,var(--c) 18%,transparent);border:1px solid color-mix(in srgb,var(--c) 55%,transparent)}
+.bar.obj .fill{background:linear-gradient(90deg,color-mix(in srgb,var(--c) 60%,transparent),var(--c));opacity:1}
+.bar.kr{height:10px;background:color-mix(in srgb,var(--c) 10%,transparent);border:1px solid color-mix(in srgb,var(--c) 35%,transparent)}
+.bar.task{height:22px;border-radius:7px;background:color-mix(in srgb,var(--c) 16%,var(--bg-2));border:1px dashed color-mix(in srgb,var(--c) 70%,transparent);overflow:visible}
+.bar.task .in{position:relative;padding:0 8px;font-size:11.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;color:color-mix(in srgb,var(--c) 55%,white)}
+.bar.task.s-prog{background:linear-gradient(90deg,color-mix(in srgb,var(--c) 70%,var(--bg-2)),color-mix(in srgb,var(--c) 38%,var(--bg-2)));border:1px solid var(--c)}
+.bar.task.s-prog .in{color:#fff}
+.bar.task.s-done{background:var(--c);border:1px solid var(--c)}
+.bar.task.s-done .in{color:#17131b}
+.bar.task.s-block{background:repeating-linear-gradient(135deg,rgba(240,122,116,.38) 0 6px,color-mix(in srgb,var(--c) 22%,var(--bg-2)) 6px 12px);border:1px solid var(--bad)}
+.bar.task.s-block .in{color:#fff}
+.bar.task.over{box-shadow:0 0 0 2px var(--bg-2),0 0 0 3px var(--bad)}
+.bar.task.nostart{border-left-color:transparent;background-clip:padding-box}
+.bar.task.nostart::before{content:"";position:absolute;inset:-1px auto -1px -1px;width:30px;border-radius:7px 0 0 7px;background:linear-gradient(90deg,var(--bg-2),transparent);pointer-events:none}
+.bar.task .in{z-index:1}
+.ms{background:var(--bg-2);border:2px solid var(--c)}
+.ms.s-prog{background:color-mix(in srgb,var(--c) 55%,var(--bg-2))} .ms.s-done{background:var(--c)} .ms.s-block{background:var(--bad);border-color:var(--bad)}
+.ms.over{box-shadow:0 0 0 2px var(--bg-2),0 0 0 3.5px var(--bad)}
+.tl-legend .sw.st{border:1px solid var(--ink-2)}
+.col{border-top:3px solid var(--sc);background:linear-gradient(180deg,color-mix(in srgb,var(--sc) 9%,var(--bg-2)),var(--bg-2) 180px)}
+.col-h i{background:var(--sc)}
+.kcard{border-left:4px solid var(--c);background:linear-gradient(100deg,color-mix(in srgb,var(--c) 9%,var(--surface)),var(--surface) 70%)}
+.kcard:hover{border-color:color-mix(in srgb,var(--c) 55%,transparent);border-left-color:var(--c)}
+.kcard.blocked{border-left:4px solid var(--c);box-shadow:inset 0 0 0 1px rgba(240,122,116,.55)}
+.kcard .blk{font-size:10.5px;font-weight:700;color:var(--bad);letter-spacing:.04em}
+.kcard.done .t{color:var(--ink-2);text-decoration:line-through;text-decoration-color:color-mix(in srgb,var(--c) 70%,transparent)}
+.swatches{display:flex;gap:8px;flex-wrap:wrap}
+.swatches button{width:30px;height:30px;border-radius:50%;border:2px solid transparent;background:var(--sw);box-shadow:inset 0 0 0 2px var(--bg-2)}
+.swatches button[aria-pressed="true"]{border-color:var(--ink)}
+.objlegend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--ink-2)}
+.objlegend span{display:inline-flex;align-items:center;gap:6px}
+.objlegend i{width:10px;height:10px;border-radius:3px;background:var(--c)}
+
+/* ---------- Helfarger: ingen gjennomsiktige fargefelt ---------- */
+.chip.oc{background:var(--c);color:#17131b}
+.chip.krc{background:color-mix(in srgb,var(--c) 40%,#2a2431);color:#fff;box-shadow:none}
+.fchip[aria-pressed="true"]{background:var(--c,var(--ink-2));border-color:var(--c,var(--ink-2));color:#17131b}
+.fchip[aria-pressed="true"] i{background:#17131b}
+.prio{background:color-mix(in srgb,var(--c,#3a3342) 28%,#2b293b);border-color:var(--c,var(--line-2))}
+.prio b{background:var(--c,var(--lilac));color:#17131b}
+.pbar,.pbar.oc{background:color-mix(in srgb,var(--c,#8c8195) 18%,#231e29)}
+.pbar.oc .pfill{background:var(--c)}
+.st-ok{background:color-mix(in srgb,#93d27c 20%,#231e29)} .st-warn{background:color-mix(in srgb,#f1bb5a 20%,#231e29)} .st-bad{background:color-mix(in srgb,#f07a74 20%,#231e29)} .st-none{background:#332c3b}
+.tree tr.k td{background:color-mix(in srgb,var(--c) 5%,#231e29)}
+.tree tr.o td{background:color-mix(in srgb,var(--c) 16%,#2a2431)}
+.tree tr.o:hover td{background:color-mix(in srgb,var(--c) 22%,#2a2431)}
+.tree tr.k td:first-child,.tree tr.t td:first-child,.tree tr.add td:first-child{border-left:4px solid var(--c)}
+.tl-row.o{background:color-mix(in srgb,var(--c) 14%,#231e29)}
+.tl-row.k{background:color-mix(in srgb,var(--c) 6%,#231e29)}
+.tl-row.t{background:color-mix(in srgb,var(--c) 3%,#231e29)}
+.tl-row.o .tl-lab{background:color-mix(in srgb,var(--c) 20%,#2a2431)}
+.tl-row.k .tl-lab{background:color-mix(in srgb,var(--c) 9%,#231e29)}
+.tl-row.t .tl-lab{background:color-mix(in srgb,var(--c) 4%,#231e29)}
+.tl-row.k .tl-lab,.tl-row.t .tl-lab{box-shadow:inset 4px 0 0 var(--c)}
+.tl-lab .txt{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.3}
+.tl-row.k .tl-lab .txt,.tl-row.t .tl-lab .txt{color:var(--ink)}
+.tl-row.k .tl-lab .txt{font-size:13px}
+.bar.obj{height:20px;background:color-mix(in srgb,var(--c) 30%,#231e29);border:0}
+.bar.obj .fill{background:var(--c)}
+.bar.kr{height:12px;background:color-mix(in srgb,var(--c) 22%,#231e29);border:0}
+.bar.kr .fill{background:var(--c)}
+.bar.task{height:26px;border-radius:6px;border:0;background:color-mix(in srgb,var(--c) 38%,#231e29)}
+.bar.task .in{color:#fff;font-size:12px}
+.bar.task.s-prog{background:color-mix(in srgb,var(--c) 72%,#231e29);border:0}
+.bar.task.s-prog .in{color:#17131b}
+.bar.task.s-done{background:var(--c);border:0}
+.bar.task.s-done .in{color:#17131b}
+.bar.task.s-block{background:#e0615b;border:0}
+.bar.task.s-block .in{color:#fff}
+.bar.task.nostart::before{display:none}
+.bar.task.over{box-shadow:0 0 0 2px #231e29,0 0 0 4px var(--bad)}
+.tl-legend .sw{border:0}
+table.tree{min-width:1200px}
+.period .inl.date{width:126px}
+.inl.unitin{width:84px}
+
+/* ---------- Mine oppgaver ---------- */
+.pbar-people{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px}
+.pchip{display:inline-flex;align-items:center;gap:8px;padding:5px 12px 5px 5px;border-radius:999px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink);font-size:13.5px;font-weight:500}
+.pchip:hover{border-color:var(--ink-3)}
+.pchip small{color:var(--ink-3);font-weight:400}
+.pchip b{font-size:11.5px;font-weight:700;min-width:20px;height:20px;padding:0 6px;border-radius:999px;display:grid;place-items:center;background:#3a3342;color:var(--ink-2)}
+.pchip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.pchip[aria-pressed="true"] small{color:var(--accent-ink)}
+.pchip[aria-pressed="true"] b{background:var(--accent-ink);color:var(--accent)}
+.mine-head{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 18px}
+.mstat{display:flex;flex-direction:column;padding:10px 16px;border-radius:12px;background:var(--surface);border:1px solid var(--line);min-width:120px}
+.mstat b{font-family:var(--font-d);font-size:24px;font-weight:600;font-variant-numeric:tabular-nums}
+.mstat span{font-size:12px;color:var(--ink-2)}
+.mstat.bad b{color:var(--bad)} .mstat.warn b{color:var(--warn)}
+.mgroup{margin:0 0 22px}
+.mgroup h2{font-size:16px;display:flex;align-items:center;gap:10px;margin:0 0 8px}
+.mgroup h2 .n{font-family:var(--font-b);font-size:12px;color:var(--ink-3);font-weight:500}
+.mgroup.bad h2{color:var(--bad)}
+.mlist{display:grid;gap:6px}
+.mrow{display:grid;grid-template-columns:30px minmax(0,1fr) 140px 150px;gap:12px;align-items:center;padding:10px 12px;border-radius:12px;background:color-mix(in srgb,var(--c) 7%,#2a2431);border:1px solid var(--line);border-left:4px solid var(--c)}
+.mrow:hover{border-color:var(--line-2);border-left-color:var(--c)}
+.mrow .tt{cursor:pointer;min-width:0}
+.mrow .tt b{font-weight:500;font-size:14px;line-height:1.35;display:block}
+.mrow .tt:hover b{color:var(--accent-text)}
+.mrow .meta{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:5px;font-size:12px;color:var(--ink-2)}
+.check{width:26px;height:26px;border-radius:8px;border:2px solid var(--ink-3);background:transparent;color:transparent;display:grid;place-items:center;font-weight:800;font-size:14px}
+.check:hover{border-color:var(--accent);color:var(--accent)}
+.check.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.mrow.done .tt b{text-decoration:line-through;color:var(--ink-3)}
+.mkr{display:grid;grid-template-columns:minmax(0,1fr) auto 150px;gap:14px;align-items:center;padding:10px 12px;border-radius:12px;background:color-mix(in srgb,var(--c) 7%,#2a2431);border:1px solid var(--line);border-left:4px solid var(--c)}
+.pickme{padding:40px;text-align:center}
+.kcount{border:0;background:transparent;color:var(--ink-2);font-size:12.5px;padding:3px 6px;border-radius:6px;text-align:left;line-height:1.35}
+.kcount:hover{background:rgba(244,237,228,.06);color:var(--ink)}
+.kcount b{color:var(--bad)}
+.lane{margin:0 0 18px;border-radius:var(--r);border:1px solid var(--line);border-left:4px solid var(--c);background:color-mix(in srgb,var(--c) 5%,#1f1a24);padding:10px}
+.lane-h{display:flex;align-items:center;gap:10px;padding:4px 4px 10px;font-family:var(--font-d);font-weight:600;font-size:15px}
+.lane-h .n{font-family:var(--font-b);font-weight:400;font-size:12px;color:var(--ink-3)}
+.lane .board{gap:10px}
+.lane .col{min-height:90px}
+.lane .col-h{padding:10px 12px 8px;font-size:12.5px}
+.showdone{border:0;background:transparent;color:var(--ink-3);font-size:12px;padding:4px 12px 10px;text-align:left}
+.showdone:hover{color:var(--ink)}
+@media (max-width:760px){.mrow{grid-template-columns:30px 1fr}.mrow>:nth-child(3),.mrow>:nth-child(4){grid-column:2}.mkr{grid-template-columns:1fr}}
+
+@media (max-width:1100px){.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}.dash{grid-template-columns:1fr}}
+@media (max-width:760px){
+  .top-in{gap:12px;padding:0 16px;height:auto;flex-wrap:wrap;padding-top:10px}
+  nav.tabs{order:3;width:100%;overflow-x:auto;height:44px}
+  nav.tabs a kbd{display:none}
+  .brand span{display:none}
+  main{padding:20px 16px 60px}
+  .vision{grid-template-columns:1fr;padding:20px}
+  .vision .meta{text-align:left}
+  .tiles{grid-template-columns:1fr}
+  .grid2,.grid3{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="top-in">
+    <div class="brand"><b>Figment</b><span>Strategi og OKR</span></div>
+    <nav class="tabs" aria-label="Visninger">
+      <a href="#oversikt" data-view="oversikt">Oversikt <kbd>1</kbd></a>
+      <a href="#mine" data-view="mine">Mine oppgaver <kbd>2</kbd></a>
+      <a href="#okr" data-view="okr">OKR <kbd>3</kbd></a>
+      <a href="#tidslinje" data-view="tidslinje">Tidslinje <kbd>4</kbd></a>
+      <a href="#tavle" data-view="tavle">Tavle <kbd>5</kbd></a>
+    </nav>
+    <div class="top-right">
+      <label class="sr" for="person" style="position:absolute;left:-9999px">Vis for person</label>
+      <select id="person" class="sel" title="Filtrer oppgaver på person"></select>
+      <div class="sync" id="sync" role="status" aria-live="polite"><i></i><span>Kobler til…</span></div>
+      <button class="iconbtn" id="helpBtn" title="Slik fungerer det" aria-label="Slik fungerer det">?</button>
+    </div>
+  </div>
+</header>
+<div class="banner" id="banner"></div>
+<main id="main"><div class="skeleton">Henter strategi, mål og oppgaver…</div></main>
+
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="drTitle"></aside>
+<div class="toast" id="toast" role="status"></div>
+<div class="pop" id="pop" role="dialog" aria-label="Velg ansvarlig" hidden></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<style>
+#login{position:fixed;inset:63px 0 0 0;z-index:30;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:24px}
+#login[hidden]{display:none}
+#login .box{width:100%;max-width:400px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:32px 28px;box-shadow:var(--shadow)}
+#login h1{font-size:26px;margin:0 0 6px}
+#login p{color:var(--ink-2);margin:0 0 20px}
+#login button{width:100%;background:var(--accent);color:var(--accent-ink);border:0;border-radius:10px;padding:11px;font-weight:600}
+#login button[disabled]{opacity:.6;cursor:default}
+#lgGoogle{display:flex;align-items:center;justify-content:center;gap:10px;background:#fff!important;color:#1f1f1f!important}
+#login .msg{min-height:20px;margin-top:12px;font-size:13px;color:var(--ink-2)}
+#login .msg.err{color:var(--bad)}
+#signout{background:none;border:1px solid var(--line-2);border-radius:8px;color:var(--ink-2);font-size:12px;padding:4px 10px}
+#signout:hover{color:var(--ink)}
+</style>
+<div id="login" hidden>
+  <div class="box">
+    <h1>Figment Strategi og OKR</h1>
+    <p>Logg inn med Google-kontoen din i Figment.</p>
+    <button id="lgGoogle" type="button"><svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>Logg inn med Google</button>
+    <div class="msg" id="lgMsg" role="status" aria-live="polite"></div>
+  </div>
+</div>
+<script>
+(() => {
+'use strict';
+const SB_URL = 'https://oswixztvpjpyrqcmyiuk.supabase.co';
+const SB_KEY = 'sb_publishable_DcJO_2OpLCUqNFd1MtcvqQ_QPV0BA00';
+const DOMAIN = '@figment.no';
+if (!window.supabase) { document.getElementById('login').hidden = false; document.getElementById('lgGoogle').hidden = true; document.getElementById('lgMsg').textContent = 'Kunne ikke laste innloggingen. Sjekk nettforbindelsen og last siden på nytt.'; window.__okrReady = new Promise(() => {}); return; }
+const sb = window.supabase.createClient(SB_URL, SB_KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, flowType: 'pkce' } });
+const T = 'okr_docs';
+const okDomain = e => String(e || '').toLowerCase().endsWith(DOMAIN);
+
+/* ---------- Innlogging ---------- */
+let resolveReady; window.__okrReady = new Promise(r => resolveReady = r);
+let session = null, profile = null;
+const L = id => document.getElementById(id);
+const msg = (t, err) => { const m = L('lgMsg'); m.textContent = t; m.className = 'msg' + (err ? ' err' : ''); };
+L('lgGoogle').addEventListener('click', async () => {
+  L('lgGoogle').disabled = true; msg('Sender deg til Google…');
+  const { error } = await sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: location.origin + location.pathname, queryParams: { hd: 'figment.no', prompt: 'select_account' } } });
+  if (error) { L('lgGoogle').disabled = false; msg('Kunne ikke starte innlogging: ' + error.message, true); }
+});
+const nameFromEmail = e => String(e).split('@')[0].split(/[._-]+/).filter(Boolean).map(w => w[0].toUpperCase() + w.slice(1)).join(' ');
+async function onSession(s) {
+  if (!s) { session = null; L('login').hidden = false; return; }
+  if (!okDomain(s.user.email)) { await sb.auth.signOut(); L('login').hidden = false; msg('Bare kontoer i Figment (' + DOMAIN + ') har tilgang.', true); return; }
+  if (session && session.user.id === s.user.id) { session = s; return; }
+  session = s;
+  const { data } = await sb.from('okr_profiles').select('*').eq('id', s.user.id).maybeSingle();
+  profile = data || { id: s.user.id, email: s.user.email, name: (s.user.user_metadata && (s.user.user_metadata.full_name || s.user.user_metadata.name)) || nameFromEmail(s.user.email) };
+  if (!data) await sb.from('okr_profiles').upsert({ id: profile.id, email: profile.email, name: profile.name });
+  L('login').hidden = true;
+  const tr = document.querySelector('.top-right');
+  if (tr && !L('signout')) { const b = document.createElement('button'); b.id = 'signout'; b.type = 'button'; b.textContent = 'Logg ut'; b.title = 'Logget inn som ' + s.user.email; b.addEventListener('click', async () => { await sb.auth.signOut(); location.reload(); }); tr.appendChild(b); }
+  resolveReady();
+}
+sb.auth.onAuthStateChange((ev, s) => { setTimeout(() => onSession(s), 0); });
+sb.auth.getSession().then(({ data }) => onSession(data.session));
+
+/* ---------- Database med samme grensesnitt som før ---------- */
+const cache = {};            // col -> Map(id -> data)
+const colSubs = {};          // col -> Set(cb)
+const docSubs = {};          // 'col/id' -> Set(cb)
+const errSubs = new Set();
+const clone = v => JSON.parse(JSON.stringify(v));
+const mkDoc = (id, data) => ({ id, exists: data != null, data: () => (data == null ? undefined : clone(data)) });
+const notifyCol = col => { const m = cache[col]; if (!m) return; const snap = { docs: [...m].map(([id, d]) => mkDoc(id, d)) }; (colSubs[col] || []).forEach(cb => { try { cb(snap); } catch (e) { console.error(e); } }); };
+const notifyDoc = (col, id) => { const m = cache[col]; const d = m ? m.get(id) : undefined; (docSubs[col + '/' + id] || []).forEach(cb => { try { cb(mkDoc(id, d === undefined ? null : d)); } catch (e) { console.error(e); } }); };
+const notify = (col, id) => { notifyCol(col); if (id) notifyDoc(col, id); else Object.keys(docSubs).filter(k => k.startsWith(col + '/')).forEach(k => notifyDoc(col, k.slice(col.length + 1))); };
+const wrapErr = e => { const x = new Error((e && e.message) || 'Feil'); x.code = (e && (e.code === '42501' || e.status === 401 || e.status === 403)) ? 'permission_denied' : 'unavailable'; return x; };
+const loading = {};
+async function load(col) {
+  if (loading[col]) return loading[col];
+  loading[col] = (async () => {
+    const { data, error } = await sb.from(T).select('id,data').eq('col', col);
+    if (error) throw wrapErr(error);
+    cache[col] = new Map(data.map(r => [r.id, r.data]));
+    notify(col);
+  })().finally(() => { delete loading[col]; });
+  return loading[col];
+}
+const reloadAll = () => Object.keys(cache).forEach(c => load(c).catch(e => errSubs.forEach(f => f(e))));
+let channel = null;
+function startRealtime() {
+  if (channel) return;
+  channel = sb.channel('okr-docs').on('postgres_changes', { event: '*', schema: 'public', table: T }, p => {
+    const row = p.eventType === 'DELETE' ? p.old : p.new; if (!row || !row.col) return;
+    if (!cache[row.col]) return;
+    if (p.eventType === 'DELETE') cache[row.col].delete(row.id); else cache[row.col].set(row.id, row.data);
+    notify(row.col, row.id);
+  }).subscribe(st => { if (st === 'SUBSCRIBED') reloadAll(); });
+}
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') reloadAll(); });
+const newId = () => { const a = 'abcdefghijklmnopqrstuvwxyz0123456789'; let s = ''; const r = crypto.getRandomValues(new Uint8Array(20)); r.forEach(n => s += a[n % 36]); return s; };
+function ref(col, id) {
+  return {
+    id,
+    onSnapshot(cb, err) {
+      const k = col + '/' + id; (docSubs[k] || (docSubs[k] = new Set())).add(cb); if (err) errSubs.add(err);
+      startRealtime();
+      if (cache[col]) notifyDoc(col, id); else load(col).catch(e => err && err(e));
+      return () => docSubs[k].delete(cb);
+    },
+    async set(data) {
+      const { error } = await sb.from(T).upsert({ col, id, data, updated_at: new Date().toISOString() });
+      if (error) throw wrapErr(error);
+      if (cache[col]) { cache[col].set(id, clone(data)); notify(col, id); }
+    },
+    async update(p) {
+      const { error } = await sb.rpc('okr_patch', { p_col: col, p_id: id, p_patch: p });
+      if (error) throw wrapErr(error);
+      if (cache[col]) { cache[col].set(id, Object.assign({}, cache[col].get(id) || {}, clone(p))); notify(col, id); }
+    },
+    async delete() {
+      const { error } = await sb.from(T).delete().eq('col', col).eq('id', id);
+      if (error) throw wrapErr(error);
+      if (cache[col]) { cache[col].delete(id); notify(col, id); }
+    }
+  };
+}
+const db = {
+  collection(col) {
+    return {
+      doc: id => ref(col, id || newId()),
+      onSnapshot(cb, err) {
+        (colSubs[col] || (colSubs[col] = new Set())).add(cb); if (err) errSubs.add(err);
+        startRealtime();
+        if (cache[col]) notifyCol(col); else load(col).catch(e => err && err(e));
+        return () => colSubs[col].delete(cb);
+      }
+    };
+  },
+  doc(path) { const [c, id] = path.split('/'); return ref(c, id); }
+};
+
+/* ---------- Brukere ---------- */
+let people = null;
+async function allPeople() {
+  if (people) return people;
+  const { data } = await sb.from('okr_profiles').select('id,name,email').order('name');
+  people = (data || []).filter(p => p.name); return people;
+}
+const user = {
+  id: async () => session && session.user.id,
+  me: async () => ({ name: profile ? profile.name : '', email: session ? session.user.email : '' }),
+  can: async () => true,
+  isOwner: async () => false,
+  search: async q => { const ps = await allPeople(); q = String(q || '').toLowerCase(); return ps.filter(p => !q || p.name.toLowerCase().includes(q) || p.email.toLowerCase().includes(q)); },
+  profiles: async ids => { const ps = await allPeople(); const out = {}; ids.forEach(id => { const p = ps.find(x => x.id === id); if (p) out[id] = { name: p.name }; }); return out; }
+};
+
+window.claude = { use: async n => { await window.__okrReady; return n === 'db' ? db : n === 'user' ? user : null; } };
+})();
+</script>
+
+<script>
+(() => {
+'use strict';
+/* ---------- Hjelpere ---------- */
+const $ = (s, r = document) => r.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const M = ['jan','feb','mar','apr','mai','jun','jul','aug','sep','okt','nov','des'];
+const DAY = 864e5;
+const pd = s => { if (!s) return null; const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(s); return m ? new Date(+m[1], +m[2]-1, +m[3]) : null; };
+const iso = d => d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+const today = () => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), d.getDate()); };
+const fmtD = (s, yr) => { const d = typeof s === 'string' ? pd(s) : s; if (!d) return '–'; const y = d.getFullYear() !== today().getFullYear() || yr; return d.getDate() + '. ' + M[d.getMonth()] + (y ? ' ' + String(d.getFullYear()).slice(2) : ''); };
+const qOf = d => 'Q' + (Math.floor(d.getMonth()/3)+1) + ' ' + d.getFullYear();
+const periodLabel = o => { const a = pd(o.start), b = pd(o.end); if (!a || !b) return 'Periode ikke satt'; const qa = qOf(a), qb = qOf(b); return qa === qb ? qa : qa + ' – ' + qb; };
+const isoWeek = d => { const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); const n = t.getUTCDay() || 7; t.setUTCDate(t.getUTCDate() + 4 - n); const y0 = new Date(Date.UTC(t.getUTCFullYear(),0,1)); return Math.ceil(((t - y0) / DAY + 1) / 7); };
+const num = v => { if (v === null || v === undefined || v === '') return null; if (typeof v === 'number') return isFinite(v) ? v : null; const n = parseFloat(String(v).replace(/\s/g,'').replace(',', '.')); return isFinite(n) ? n : null; };
+const fmtN = n => n == null ? '–' : n.toLocaleString('nb-NO', {maximumFractionDigits: 1});
+const byCode = (a, b) => String(a.code||'').localeCompare(String(b.code||''), 'nb', {numeric: true}) || String(a.title||'').localeCompare(String(b.title||''));
+const hasOwner = s => !!(s && s.trim() && s.trim().toLowerCase() !== 'avklares');
+const AVC = ['#4BC2A2','#d2c6dc','#f1bb5a','#8fb8ff','#f0a3b5','#b7d77a'];
+const avColor = s => { let h = 0; for (const c of String(s)) h = (h*31 + c.charCodeAt(0)) >>> 0; return AVC[h % AVC.length]; };
+const initials = s => String(s).trim().split(/\s+/).slice(0,2).map(w => w[0]).join('').toUpperCase();
+const avatar = name => hasOwner(name) ? `<span class="av" style="background:${avColor(name.trim())}" title="${esc(name)}">${esc(initials(name))}</span>` : `<span class="av none" title="Ingen eier">?</span>`;
+const owner = name => hasOwner(name) ? `<span class="owner">${avatar(name)}<span>${esc(name)}</span></span>` : `<span class="owner missing">${avatar('')}<span>Mangler eier</span></span>`;
+
+const OPAL = ['#4BC2A2','#a98bf5','#63b3ed','#ec7fb8','#f6a57a','#5fd0d8'];
+const OPAL_N = ['Mint','Lilla','Himmel','Rosa','Fersken','Turkis'];
+const objColor = o => { if (!o) return '#8c8195'; if (o.color) return o.color; const i = objs().findIndex(x => x.id === o.id); return OPAL[(i < 0 ? 0 : i) % OPAL.length]; };
+const taskObj = t => t.krId && S.kr[t.krId] ? S.obj[S.kr[t.krId].objId] : S.obj[t.objId];
+const cv = c => `--c:${esc(c)}`;
+const shortT = (t, n) => { t = String(t || '').split(/[,.]/)[0]; if (t.length <= n) return t; return t.slice(0, t.lastIndexOf(' ', n)) + '…'; };
+const spStyle = code => { const o = objs().find(o => (o.sp||[]).includes(code)); return o ? cv(objColor(o)) : ''; };
+const objLegend = () => `<div class="objlegend">${objs().map(o => `<span style="${cv(objColor(o))}"><i></i>${esc(o.code)} ${esc(shortT(o.title, 44))}</span>`).join('')}</div>`;
+const KR_ST = {'On track':'ok','At risk':'warn','Off track':'bad','Ikke vurdert':'none'};
+const KR_ST_LIST = ['On track','At risk','Off track','Ikke vurdert'];
+/* Kolonner på tavla: id lagres på oppgaven, tittel og rekkefølge kan endres. kind styrer betydning (ferdig, blokkert osv.). */
+const KINDS = [['todo','Ikke startet'],['doing','I arbeid'],['blocked','Blokkert'],['done','Ferdig']];
+const K_LABEL = Object.fromEntries(KINDS);
+const K_BAR = { todo: '', doing: 's-prog', blocked: 's-block', done: 's-done' };
+const K_COLOR = { todo: '#8c8195', doing: '#8fb8ff', blocked: '#f07a74', done: '#4BC2A2' };
+const COL_PAL = ['#8c8195','#8fb8ff','#f1bb5a','#f07a74','#4BC2A2','#a98bf5','#ec7fb8','#63b3ed'];
+const DEFAULT_COLS = [{ id: 'Ikke startet', title: 'Ikke startet', kind: 'todo' }, { id: 'Pågår', title: 'Pågår', kind: 'doing' }, { id: 'Blokkert', title: 'Blokkert', kind: 'blocked' }, { id: 'Ferdig', title: 'Ferdig', kind: 'done' }];
+const cols = () => (S.board && Array.isArray(S.board.columns) && S.board.columns.length) ? S.board.columns : DEFAULT_COLS;
+const colOf = sid => cols().find(c => c.id === sid) || cols()[0];
+const tCol = t => colOf(t.status);
+const tKind = t => tCol(t).kind || 'todo';
+const colColor = c => c.color || K_COLOR[c.kind] || '#8c8195';
+const O_ST = ['Utkast','Vedtatt','Avsluttet'];
+const krCls = s => 'st-' + (KR_ST[s] || 'none');
+const krColor = s => ({ok:'var(--ok)',warn:'var(--warn)',bad:'var(--bad)',none:'var(--ink-3)'})[KR_ST[s] || 'none'];
+
+/* ---------- Tilstand ---------- */
+const S = { meta: null, board: null, obj: {}, kr: {}, task: {} };
+const loaded = { meta: false, board: false, obj: false, kr: false, task: false };
+const COLS = { obj: 'objectives', kr: 'krs', task: 'tasks' };
+let db = null, user = null, canWrite = false, meId = null, meName = '', mode = 'connecting';
+const UI = { view: 'oversikt', person: '', level: 3, lanes: false, showDone: false, mine: '', exp: new Map(), zoom: 'mnd', focus: '', focusKr: '', q: '', drawer: null, tlScroll: null };
+try { const p = localStorage.getItem('fg-person'); if (p) UI.person = p; const l = +localStorage.getItem('fg-lvl'); if (l) UI.level = l; UI.lanes = localStorage.getItem('fg-lanes') === '1'; UI.mine = localStorage.getItem('fg-mine') || ''; } catch (e) {}
+const remember = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
+
+/* ---------- Avledede data ---------- */
+const objs = () => Object.values(S.obj).sort(byCode);
+const krsOf = oid => Object.values(S.kr).filter(k => k.objId === oid).sort(byCode);
+const isMeTask = x => !!((meId && x.ownerId && x.ownerId === meId) || (meName && hasOwner(x.owner) && x.owner.toLowerCase().includes(meName.split(' ')[0].toLowerCase())));
+const personMatch = (name, item) => {
+  if (!UI.person) return true;
+  if (UI.person === '__none') return !hasOwner(name);
+  if (UI.person === '__me') return isMeTask(item || { owner: name });
+  return ownerHas(name, UI.person);
+};
+const allTasks = () => Object.values(S.task).sort((a,b) => (a.due||'9').localeCompare(b.due||'9') || byCode(a,b));
+const visTasks = () => allTasks().filter(t => personMatch(t.owner, t));
+const tasksOfKr = kid => visTasks().filter(t => t.krId === kid);
+const tasksOfObjDirect = oid => visTasks().filter(t => t.objId === oid && (!t.krId || !S.kr[t.krId]));
+const tasksOfObjAll = oid => allTasks().filter(t => t.objId === oid || (t.krId && S.kr[t.krId] && S.kr[t.krId].objId === oid));
+const unlinked = () => visTasks().filter(t => (!t.objId || !S.obj[t.objId]) && (!t.krId || !S.kr[t.krId]));
+const krProg = k => { const b = num(k.baseline), c = num(k.current), t = num(k.target); if (b == null || c == null || t == null || t === b) return null; return Math.max(0, Math.min(1, (c - b) / (t - b))); };
+const objProg = o => { const ps = krsOf(o.id).map(krProg).filter(p => p != null); return ps.length ? ps.reduce((a,b) => a+b, 0) / ps.length : null; };
+const elapsed = o => { const a = pd(o.start), b = pd(o.end); if (!a || !b || b <= a) return null; return Math.max(0, Math.min(1, (today() - a) / (b - a + DAY))); };
+const krReady = k => num(k.baseline) != null && num(k.target) != null;
+const dueState = t => { if (tKind(t) === 'done') return ''; const d = pd(t.due); if (!d) return ''; const diff = (d - today()) / DAY; return diff < 0 ? 'overdue' : diff <= 3 ? 'soon' : ''; };
+const doneShare = list => { const n = list.length, d = list.filter(t => tKind(t) === 'done').length; return { n, d }; };
+const linkCode = t => t.krId && S.kr[t.krId] ? S.kr[t.krId].code : (t.objId && S.obj[t.objId] ? S.obj[t.objId].code : null);
+const splitOwners = v => String(v || '').split(/\s*(?:\/|,|&|\+|\bog\b)\s*/i).map(x => x.trim()).filter(hasOwner);
+const ftok = v => String(v || '').trim().split(/\s+/)[0].toLowerCase();
+const ownerHas = (ownerStr, person) => !!person && splitOwners(ownerStr).some(p => p.toLowerCase() === person.toLowerCase() || ftok(p) === ftok(person));
+const people = () => { const s = new Set(); Object.values(S.task).forEach(x => splitOwners(x.owner).forEach(p => s.add(p))); return [...s].sort((a,b) => a.localeCompare(b,'nb')); };
+/* Alle personer for knapperaden: de med tilgang til verktøyet + alle navn brukt som ansvarlig. Samme fornavn slås sammen. */
+let teamDir = [];
+async function loadTeam() { try { const d = await directory(''); if (d && d.length) { teamDir = d; scheduleRender(); } } catch (e) {} }
+function teamPeople() {
+  const out = [];
+  const add = (name, member) => { const f = ftok(name); const ex = out.find(p => ftok(p.name) === f); if (ex) { if (member) ex.member = true; if (name.length > ex.name.length && member) ex.name = name; } else out.push({ name, member: !!member }); };
+  teamDir.forEach(p => add(p.name, true));
+  people().forEach(n => add(n, false));
+  return out.sort((a, b) => (b.member - a.member) || a.name.localeCompare(b.name, 'nb'));
+}
+const shown = (id, lvl) => UI.exp.has(id) ? UI.exp.get(id) : UI.level >= lvl;
+
+/* ---------- Komponenter ---------- */
+function pbar(p, exp, cls, color) {
+  const st = color ? ` style="--c:${color}"` : '';
+  if (p == null) return `<div class="prog"${st}><span class="pnone" title="Krever baseline, nåverdi og mål">Ikke målbart ennå</span></div>`;
+  const e = exp != null ? `<div class="pexp" style="left:${(exp*100).toFixed(1)}%" title="Forventet etter tid brukt i perioden: ${Math.round(exp*100)} %"></div>` : '';
+  return `<div class="prog"${st}><div class="pbar ${cls||''}"><div class="pfill" style="width:${(p*100).toFixed(1)}%"></div>${e}</div><span class="pnum">${Math.round(p*100)} %</span></div>`;
+}
+const krPill = s => `<span class="pill ${krCls(s)}">${esc(s || 'Ikke vurdert')}</span>`;
+const pillStyle = c => `color:${colColor(c)};background:color-mix(in srgb,${colColor(c)} 22%,#231e29)`;
+const tPill = s => { const c = colOf(s); return `<span class="pill" style="${pillStyle(c)}">${esc(c.title)}</span>`; };
+const taskSel = t => { const c = tCol(t); if (!canWrite) return tPill(t.status); return `<select class="pill" style="${pillStyle(c)}" data-quick="task" data-id="${esc(t.id)}" aria-label="Endre status">${cols().map(x => `<option value="${esc(x.id)}"${x.id === c.id ? ' selected' : ''}>${esc(x.title)}</option>`).join('')}</select>`; };
+const selPill = (kind, id, val, list, clsFn) => canWrite
+  ? `<select class="pill ${clsFn(val)}" data-quick="${kind}" data-id="${esc(id)}" aria-label="Endre status">${list.map(s => `<option${s === val ? ' selected' : ''}>${esc(s)}</option>`).join('')}</select>`
+  : `<span class="pill ${clsFn(val)}">${esc(val)}</span>`;
+
+/* ---------- Oversikt ---------- */
+function viewOversikt() {
+  const m = S.meta || {};
+  const os = objs();
+  if (!os.length) return emptyAll();
+  const krs = Object.values(S.kr).filter(k => S.obj[k.objId]);
+  const tasks = visTasks();
+  const t0 = today();
+  const progs = os.map(objProg).filter(p => p != null);
+  const avg = progs.length ? progs.reduce((a,b)=>a+b,0)/progs.length : null;
+  const exps = os.map(elapsed).filter(e => e != null);
+  const expAvg = exps.length ? exps.reduce((a,b)=>a+b,0)/exps.length : null;
+  const cnt = {}; KR_ST_LIST.forEach(s => cnt[s] = 0); krs.forEach(k => cnt[KR_ST[k.status] ? k.status : 'Ikke vurdert']++);
+  const ready = krs.filter(krReady).length;
+  const ds = doneShare(tasks);
+  const prog = tasks.filter(t => tKind(t) === 'doing').length;
+  const blocked = tasks.filter(t => tKind(t) === 'blocked');
+  const overdue = tasks.filter(t => dueState(t) === 'overdue');
+
+  // Krever oppmerksomhet
+  const attn = [];
+  overdue.forEach(t => attn.push({ c: 'var(--bad)', t: t.title, d: `Forfalt · ${linkCode(t) || 'Ikke koblet'} · ${hasOwner(t.owner) ? esc(t.owner) : 'mangler eier'}`, when: fmtD(t.due), open: `task:${t.id}` }));
+  blocked.filter(t => !overdue.includes(t)).forEach(t => attn.push({ c: 'var(--bad)', t: t.title, d: `Blokkert · ${linkCode(t) || ''}${t.next ? ' · ' + esc(t.next) : ''}`, when: fmtD(t.due), open: `task:${t.id}` }));
+  krs.filter(k => k.status === 'Off track' || k.status === 'At risk').forEach(k => attn.push({ c: krColor(k.status), t: `${k.code} ${k.title}`, d: `${k.status} · nå ${fmtN(num(k.current))} av mål ${fmtN(num(k.target))} ${esc(k.unit||'')}`, when: '', open: `kr:${k.id}` }));
+  const notReady = krs.filter(k => !krReady(k));
+  if (notReady.length) attn.push({ c: 'var(--warn)', t: `${notReady.length} av ${krs.length} Key Results er ikke styringsklare`, d: 'Mangler baseline eller mål. Kan ikke måles før det er på plass.', when: 'Gå til', open: 'view:okr' });
+
+  const horizon = new Date(t0.getTime() + 14*DAY);
+  const upcoming = tasks.filter(t => tKind(t) !== 'done' && pd(t.due) && pd(t.due) >= t0 && pd(t.due) <= horizon);
+  const segs = KR_ST_LIST.filter(s => cnt[s]).map(s => `<span style="flex:${cnt[s]};background:${krColor(s)}" title="${esc(s)}: ${cnt[s]}"></span>`).join('');
+  const who = UI.person ? ` · filtrert på ${esc(personLabel())}` : '';
+
+  return `
+  <section class="vision">
+    <div>
+      <div class="eyebrow">Visjon · ${esc(m.horizon || '')}</div>
+      <h1>${esc(m.vision || 'Visjonen er ikke satt')}</h1>
+      <div class="prios">${(m.priorities||[]).map(p => `<span class="prio" style="${spStyle(p.code)}"><b>${esc(p.code)}</b>${esc(p.title)}</span>`).join('')}
+      ${canWrite ? `<button class="btn ghost" data-open="meta:strategy" style="padding:4px 10px">Rediger strategi</button>` : ''}</div>
+    </div>
+    <div class="meta"><strong class="num">Uke ${isoWeek(t0)}</strong>${fmtD(t0, true)}</div>
+  </section>
+
+  <section class="tiles" aria-label="Nøkkeltall">
+    <div class="card tile" style="--c:#4BC2A2">
+      <div class="eyebrow">Fremgang på mål</div>
+      <div class="big">${avg == null ? '–' : Math.round(avg*100) + '<small> %</small>'}</div>
+      <div class="sub">${avg == null ? 'Ingen KR har både baseline, nåverdi og mål ennå.' : `Snitt av målbare KR-er. Forventet etter tid: ${Math.round((expAvg||0)*100)} %.`}</div>
+    </div>
+    <div class="card tile" style="--c:#a98bf5">
+      <div class="eyebrow">Status på Key Results</div>
+      <div class="big">${krs.length}<small> KR</small></div>
+      <div class="stack">${segs}</div>
+      <div class="legend">${KR_ST_LIST.map(s => `<span><i style="background:${krColor(s)}"></i>${esc(s)} ${cnt[s]}</span>`).join('')}</div>
+    </div>
+    <div class="card tile" style="--c:#f6a57a">
+      <div class="eyebrow">Styringsklare KR</div>
+      <div class="big">${ready}<small> av ${krs.length}</small></div>
+      <div class="sub">Har både baseline og mål. Dette bør være ${krs.length} av ${krs.length} før en periode starter.</div>
+    </div>
+    <div class="card tile" style="--c:#63b3ed">
+      <div class="eyebrow">Oppgaver${who}</div>
+      <div class="big">${ds.d}<small> av ${ds.n} ferdig</small></div>
+      <div class="sub">${prog} pågår · <span style="color:${blocked.length ? 'var(--bad)' : 'inherit'}">${blocked.length} blokkert</span> · <span style="color:${overdue.length ? 'var(--bad)' : 'inherit'}">${overdue.length} forfalt</span></div>
+    </div>
+  </section>
+
+  <div class="dash">
+    <section>
+      <div class="sec-h"><h2>Objectives nå</h2><span class="faint" style="font-size:12px">Strek i linjen = forventet fremgang etter tid</span></div>
+      <div class="objcards">${os.map(o => {
+        const ks = krsOf(o.id), p = objProg(o), tl = doneShare(tasksOfObjAll(o.id));
+        const measurable = ks.filter(k => krProg(k) != null).length;
+        return `<article class="card objcard" style="${cv(objColor(o))}" data-goto-obj="${esc(o.id)}" tabindex="0">
+          <div class="row1"><div style="display:flex;gap:10px;align-items:flex-start"><span class="chip code oc">${esc(o.code)}</span><h3>${esc(o.title)}</h3></div></div>
+          ${pbar(p, elapsed(o), 'oc')}
+          <div class="facts"><span>${esc(periodLabel(o))}</span><span>${measurable} av ${ks.length} KR målbare</span><span>${tl.d} av ${tl.n} oppgaver ferdig</span><span class="chip">${esc(o.status || 'Utkast')}</span></div>
+          <div class="krdots">${ks.map(k => `<span class="krdot" title="${esc(k.title)}"><i style="background:${krColor(k.status)}"></i>${esc(k.code)}</span>`).join('')}</div>
+        </article>`; }).join('')}
+      </div>
+    </section>
+    <div style="display:grid;gap:22px;align-content:start">
+      <section>
+        <div class="sec-h"><h2>Krever oppmerksomhet</h2><span class="faint num" style="font-size:12px">${attn.length}</span></div>
+        <div class="attn">${attn.length ? attn.map(a => `<button class="attn-item" data-open="${esc(a.open)}"><span class="stripe" style="background:${a.c}"></span><span><div class="t">${esc(a.t)}</div><div class="d">${a.d}</div></span><span class="when" style="color:${a.c}">${esc(a.when)}</span></button>`).join('') : '<div class="card empty">Ingenting som haster. Bra.</div>'}</div>
+      </section>
+      <section class="card" style="padding:16px 18px">
+        <div class="sec-h"><h2>Neste 14 dager</h2><a class="btn ghost" href="#tavle" style="padding:3px 10px">Til tavla</a></div>
+        <div class="list">${upcoming.length ? upcoming.map(t => `<div class="li" style="${cv(objColor(taskObj(t)))}" data-open="task:${esc(t.id)}"><span class="date">${fmtD(t.due)}</span><span class="t">${esc(t.title)}<br><span class="faint" style="font-size:12px">${esc(linkCode(t) || 'Ikke koblet')} · ${hasOwner(t.owner) ? esc(t.owner) : 'mangler eier'}</span></span>${tPill(t.status)}</div>`).join('') : '<div class="empty">Ingen frister de neste 14 dagene.</div>'}</div>
+      </section>
+    </div>
+  </div>`;
+}
+
+function emptyAll() {
+  return `<div class="card empty" style="padding:60px">
+    <h2 style="margin-bottom:8px;color:var(--ink)">Ingen Objectives ennå</h2>
+    <p>Start med ett til tre Objectives for perioden. Hvert Objective får 2–4 Key Results, og oppgavene kobles til dem.</p>
+    ${canWrite ? '<button class="btn primary" data-add="obj">Legg til første Objective</button>' : ''}
+  </div>`;
+}
+
+/* ---------- OKR-tre ---------- */
+function levelSeg() {
+  return `<div class="seg" role="group" aria-label="Detaljnivå">${[[1,'Objectives'],[2,'+ Key Results'],[3,'+ Oppgaver']].map(([l,t]) => `<button data-level="${l}" aria-pressed="${UI.level === l}">${t}</button>`).join('')}</div>`;
+}
+/* ---------- Felles: fokusfilter og redigerbare felt ---------- */
+function focusObjs() { const os = objs(); if (!UI.focus) return os; if (UI.focus === '__none') return []; return os.filter(o => o.id === UI.focus); }
+function focusKrs(oid) { const ks = krsOf(oid); return UI.focusKr && ks.some(k => k.id === UI.focusKr) ? ks.filter(k => k.id === UI.focusKr) : ks; }
+const showUnlinked = () => !UI.focus || UI.focus === '__none';
+function focusBar() {
+  const os = objs();
+  const fo = UI.focus && S.obj[UI.focus];
+  let h = `<div class="fbar" role="group" aria-label="Vis mål"><span class="eyebrow">Vis</span><button class="fchip" data-focus="" aria-pressed="${!UI.focus}">Alle mål</button>${os.map(o => `<button class="fchip" style="${cv(objColor(o))}" data-focus="${esc(o.id)}" aria-pressed="${UI.focus === o.id}" title="${esc(o.title)}"><i></i>${esc(o.code)} <span>${esc(shortT(o.title, 34))}</span></button>`).join('')}<button class="fchip" data-focus="__none" aria-pressed="${UI.focus === '__none'}">Ikke koblet</button></div>`;
+  if (fo) h += `<div class="fbar sub" role="group" aria-label="Vis Key Result" style="${cv(objColor(fo))}"><span class="eyebrow">Key Result</span><button class="fchip" data-focuskr="" aria-pressed="${!UI.focusKr}">Alle i ${esc(fo.code)}</button>${krsOf(fo.id).map(k => `<button class="fchip" style="${cv(objColor(fo))}" data-focuskr="${esc(k.id)}" aria-pressed="${UI.focusKr === k.id}" title="${esc(k.title)}"><i></i>${esc(k.code)} <span>${esc(shortT(k.title, 30))}</span></button>`).join('')}</div>`;
+  return h;
+}
+const inAttr = (col, id, f) => `data-inl="${col}" data-id="${esc(id)}" data-f="${f}"`;
+function ownerEdit(col, id, name) {
+  if (!canWrite) return owner(name);
+  return `<button type="button" class="ownerbtn${hasOwner(name) ? '' : ' none'}" data-pick="${col}:${esc(id)}" aria-haspopup="listbox" title="${hasOwner(name) ? 'Bytt ansvarlig' : 'Legg til ansvarlig'}">${ownerBtnInner(name)}</button>`;
+}
+const ownerBtnInner = name => hasOwner(name) ? `${avatar(name)}<span>${esc(name)}</span>` : `<span class="plus">+</span><span>Ansvarlig</span>`;
+function dateEdit(col, id, f, val, cls, label) {
+  if (!canWrite) return `<span class="due ${cls || ''}">${val ? fmtD(val) : '–'}</span>`;
+  return `<input type="date" class="inl date ${cls || ''}${val ? '' : ' empty'}" ${inAttr(col, id, f)} value="${esc(val || '')}" aria-label="${esc(label)}" title="${esc(label)}">`;
+}
+function numEdit(col, id, f, val, label) {
+  const n = num(val);
+  if (!canWrite) return `<span>${fmtN(n)}</span>`;
+  return `<input type="text" inputmode="decimal" class="inl numin" ${inAttr(col, id, f)} data-num value="${n == null ? '' : esc(String(n).replace('.', ','))}" placeholder="–" aria-label="${esc(label)}" title="${esc(label)}">`;
+}
+function textEdit(col, id, f, val, ph, label) {
+  if (!canWrite) return `<span class="faint">${esc(val || '')}</span>`;
+  return `<input type="text" class="inl" ${inAttr(col, id, f)} value="${esc(val || '')}" placeholder="${esc(ph)}" aria-label="${esc(label)}">`;
+}
+const editHint = (kind, id) => `<button class="pen" data-open="${kind}:${esc(id)}" aria-label="Åpne alle felt" title="Åpne alle felt">✎</button>`;
+
+/* ---------- OKR-tre ---------- */
+function viewOkr() {
+  if (!objs().length) return emptyAll();
+  const os = focusObjs();
+  const caret = (id, open, has) => has ? `<button class="caret" data-toggle="${esc(id)}" aria-expanded="${open}" aria-label="Vis eller skjul">▾</button>` : `<span class="caret ph"></span>`;
+  let rows = '';
+  for (const o of os) {
+    const ks = focusKrs(o.id), direct = UI.focusKr ? [] : tasksOfObjDirect(o.id), open = shown(o.id, 2);
+    const tl = doneShare(tasksOfObjAll(o.id).filter(t => personMatch(t.owner)));
+    const oc = cv(objColor(o));
+    rows += `<tr class="o" id="row-${esc(o.id)}" style="${oc}">
+      <td><div class="namecell">${caret(o.id, open, ks.length || direct.length || canWrite)}<span class="chip code oc" style="margin-top:2px">${esc(o.code)}</span><div class="txt" data-open="obj:${esc(o.id)}"><div class="ttl">${esc(o.title)}</div><div class="tags">${(o.sp||[]).map(s => `<span class="chip">${esc(s)}</span>`).join('')}<span class="chip">${esc(o.status||'Utkast')}</span></div></div>${editHint('obj', o.id)}</div></td>
+      <td></td>
+      <td><div class="period">${dateEdit('obj', o.id, 'start', o.start, '', 'Periode fra')}<span class="arrow">→</span>${dateEdit('obj', o.id, 'end', o.end, '', 'Periode til')}</div><div class="faint" style="font-size:11.5px;margin:2px 0 0 6px">${esc(periodLabel(o))}</div></td>
+      <td>${pbar(objProg(o), elapsed(o), 'oc')}</td>
+      <td>${canWrite ? `<select class="pill st-none" data-quick="obj" data-id="${esc(o.id)}" aria-label="Status for Objective">${O_ST.map(s => `<option${s === (o.status || 'Utkast') ? ' selected' : ''}>${s}</option>`).join('')}</select>` : `<span class="pill st-none">${esc(o.status||'Utkast')}</span>`}</td>
+      <td class="muted num" style="font-size:12.5px">${tl.d}/${tl.n} ferdig</td></tr>`;
+    if (!open) continue;
+    for (const k of ks) {
+      const kt = tasksOfKr(k.id), kopen = shown(k.id, 3), p = krProg(k);
+      const missing = !krReady(k);
+      rows += `<tr class="k" style="${oc}">
+        <td><div class="namecell" style="padding-left:26px">${caret(k.id, kopen, kt.length || canWrite)}<span class="chip code oc" style="margin-top:1px">${esc(k.code)}</span><div class="txt" data-open="kr:${esc(k.id)}"><div class="ttl">${esc(k.title)}</div><div class="tags"><span class="chip">${esc(k.type||'Committed')}</span>${missing ? `<span class="chip warnc" title="Mangler baseline eller mål">Ikke styringsklar</span>` : ''}</div></div>${editHint('kr', k.id)}</div></td>
+        <td></td>
+        <td><div class="vals">${numEdit('kr', k.id, 'baseline', k.baseline, 'Baseline for ' + k.code)}<span class="arrow">→</span>${numEdit('kr', k.id, 'current', k.current, 'Nåverdi for ' + k.code)}<span class="arrow">→</span>${numEdit('kr', k.id, 'target', k.target, 'Mål for ' + k.code)}${canWrite ? `<input type="text" class="inl unitin" ${inAttr('kr', k.id, 'unit')} value="${esc(k.unit||'')}" placeholder="enhet" aria-label="Enhet">` : `<span class="faint">${esc(k.unit||'')}</span>`}</div></td>
+        <td>${pbar(p, null, 'oc')}</td>
+        <td>${selPill('kr', k.id, KR_ST[k.status] ? k.status : 'Ikke vurdert', KR_ST_LIST, krCls)}</td>
+        <td>${(() => { const d = doneShare(kt); if (!d.n) return '<span class="faint" style="font-size:12px">Ingen oppgaver</span>'; const ov = kt.filter(x => dueState(x) === 'overdue').length; return `<button class="kcount" data-toggle="${esc(k.id)}" aria-expanded="${kopen}">${kopen ? '▾' : '▸'} ${d.n} oppgave${d.n > 1 ? 'r' : ''} · ${d.d} ferdig${ov ? ` · <b>${ov} forfalt</b>` : ''}</button>`; })()}</td></tr>`;
+      if (kopen) {
+        kt.forEach(t => rows += taskRow(t, 78, oc));
+        if (canWrite) rows += `<tr class="add" style="${oc}"><td colspan="6" style="padding-left:84px"><button class="addlink" data-add="task" data-kr="${esc(k.id)}">+ Oppgave under ${esc(k.code)}</button></td></tr>`;
+      }
+    }
+    if (direct.length && UI.level >= 3) { rows += `<tr class="k" style="${oc}"><td colspan="6" style="padding-left:62px" class="faint">Oppgaver koblet direkte til ${esc(o.code)}</td></tr>`; direct.forEach(t => rows += taskRow(t, 52, oc)); }
+    if (canWrite && !UI.focusKr) rows += `<tr class="add" style="${oc}"><td colspan="6" style="padding-left:56px"><button class="addlink" data-add="kr" data-obj="${esc(o.id)}">+ Key Result under ${esc(o.code)}</button></td></tr>`;
+  }
+  const un = showUnlinked() ? unlinked() : [];
+  if (un.length) { rows += `<tr class="o" style="--c:#8c8195"><td colspan="6"><div class="namecell"><span class="caret ph"></span><div class="ttl" style="font-family:var(--font-d);font-weight:600">Ikke koblet til mål <span class="faint" style="font-family:var(--font-b);font-weight:400;font-size:12.5px">· oppgaver uten Objective eller KR</span></div></div></td></tr>`; un.forEach(t => rows += taskRow(t, 30, '--c:#8c8195')); }
+  if (!rows) rows = `<tr><td colspan="6" class="empty">Ingenting å vise med dette filteret.</td></tr>`;
+  return `
+  <div class="view-head"><div><h1>OKR og oppgaver</h1><p>Hvordan oppgavene henger sammen med Key Results og Objectives. Skriv rett i feltene for ansvarlig, verdier, datoer og neste handling. Klikk tittelen eller ✎ for alle felt.</p></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">${levelSeg()}${canWrite ? '<button class="btn primary" data-add="obj">+ Objective</button>' : ''}</div></div>
+  ${focusBar()}
+  <div class="tree-wrap"><table class="tree">
+    <colgroup><col><col style="width:165px"><col style="width:292px"><col style="width:140px"><col style="width:128px"><col style="width:140px"></colgroup>
+    <thead><tr><th>Mål · resultat · oppgave</th><th>Ansvarlig</th><th>Periode · baseline → nå → mål · neste</th><th>Fremgang · start</th><th>Status</th><th>Oppgaver · frist</th></tr></thead>
+    <tbody>${rows}</tbody></table></div>
+  <p class="note">Fremgang per KR = (nå − baseline) / (mål − baseline). Fremgang per Objective = snitt av målbare KR-er. Den lyse streken viser hvor langt vi er kommet i perioden. Oppgaver ferdig viser leveranse, ikke effekt: et KR kan stå stille selv om alle oppgavene er gjort.</p>`;
+}
+function taskRow(t, pad, oc) {
+  return `<tr class="t" style="${oc || ''}"><td><div class="namecell" style="padding-left:${pad}px"><span class="tdot" style="background:${colColor(tCol(t))}"></span><div class="txt" data-open="task:${esc(t.id)}"><span class="ttl">${esc(t.title)}</span>${t.priority === 'P1' ? ' <span class="prio-tag p1">P1</span>' : ''}</div>${editHint('task', t.id)}</div></td>
+    <td>${ownerEdit('task', t.id, t.owner)}</td>
+    <td>${textEdit('task', t.id, 'next', t.next, '+ Neste handling', 'Neste handling')}</td>
+    <td>${dateEdit('task', t.id, 'start', t.start, '', 'Startdato')}</td>
+    <td>${taskSel(t)}</td>
+    <td>${dateEdit('task', t.id, 'due', t.due, dueState(t), 'Frist')}</td></tr>`;
+}
+
+/* ---------- Tidslinje ---------- */
+function viewTidslinje() {
+  if (!objs().length) return emptyAll();
+  const os = focusObjs();
+  const ts = visTasks();
+  const t0 = today();
+  const dates = [];
+  objs().forEach(o => { pd(o.start) && dates.push(pd(o.start)); pd(o.end) && dates.push(pd(o.end)); });
+  ts.forEach(t => { pd(t.start) && dates.push(pd(t.start)); pd(t.due) && dates.push(pd(t.due)); });
+  dates.push(t0);
+  let min = new Date(Math.min(...dates)), max = new Date(Math.max(...dates));
+  min = new Date(min.getFullYear(), min.getMonth(), 1);
+  max = new Date(max.getFullYear(), max.getMonth() + 2, 0);
+  const ppd = UI.zoom === 'uke' ? 9 : UI.zoom === 'mnd' ? 4.2 : 2;
+  const W = Math.round((max - min) / DAY + 1) * ppd;
+  const x = d => Math.round(((d - min) / DAY) * ppd);
+  const LW = 440;
+  let head = '', grid = '';
+  for (let d = new Date(min); d <= max; d = new Date(d.getFullYear(), d.getMonth() + 1, 1)) {
+    const nx = new Date(d.getFullYear(), d.getMonth() + 1, 1), w = x(nx) - x(d);
+    const isQ = d.getMonth() % 3 === 0;
+    head += `<span class="tl-m" style="left:${x(d)}px;width:${w}px">${M[d.getMonth()]}${d.getMonth() === 0 ? ' ' + d.getFullYear() : ''}</span>`;
+    if (isQ) { const qe = new Date(d.getFullYear(), d.getMonth() + 3, 1); head += `<span class="tl-q" style="left:${x(d)}px;width:${Math.min(x(qe), W) - x(d)}px">${qOf(d)}</span>`; }
+    grid += `<i class="${isQ ? 'q' : ''}" style="left:${x(d)}px"></i>`;
+  }
+  if (UI.zoom === 'uke') {
+    for (let d = new Date(min); d <= max; d = new Date(d.getTime() + DAY)) if (d.getDay() === 1) grid += `<i style="left:${x(d)}px;opacity:.45"></i>`;
+  }
+  const caret = (id, open, has) => has ? `<button class="caret" data-toggle="${esc(id)}" aria-expanded="${open}" aria-label="Vis eller skjul">▾</button>` : `<span class="caret ph"></span>`;
+  const taskEl = t => {
+    let s = pd(t.start), e = pd(t.due); if (!e) return '';
+    const over = dueState(t) === 'overdue' ? ' over' : '';
+    const nost = !(s && e > s); if (nost) s = new Date(e.getTime() - 14*DAY);
+    const w = Math.max(14, x(e) - x(s) + ppd);
+    const lbl = `<span class="lbl">${avatar(t.owner)}${w < 110 ? `<span style="color:var(--ink)">${esc(shortT(t.title, 38))}</span> · ` : ''}${esc(hasOwner(t.owner) ? t.owner.split(' ')[0] : 'Mangler eier')} · ${fmtD(t.due)}${tKind(t) === 'blocked' ? ` · <b style="color:var(--bad)">${esc(tCol(t).title)}</b>` : ''}</span>`;
+    const tip = `${t.title} · ${nost ? 'frist ' + fmtD(t.due) + ' (startdato ikke satt, vist som 2 uker)' : fmtD(t.start) + '–' + fmtD(t.due)} · ${tCol(t).title}`;
+    return `<div class="bar task ${K_BAR[tKind(t)]||''}${over}${nost ? ' nostart' : ''}" style="left:${x(s)}px;width:${w}px" data-open="task:${esc(t.id)}" title="${esc(tip)}">${w >= 110 ? `<span class="in">${tKind(t) === 'done' ? '✓ ' : ''}${esc(t.title)}</span>` : ''}${lbl}</div>`;
+  };
+  const row = (cls, h, label, track, st) => `<div class="tl-row ${cls}" style="height:${h}px;${st || ''}"><div class="tl-lab">${label}</div><div class="tl-track" style="width:${W}px">${track}</div></div>`;
+  const tLab = (t, w) => `<span style="width:${w}px;flex:none"></span><span class="tdot" style="margin:0;background:var(--c)"></span><span class="txt" data-open="task:${esc(t.id)}" title="${esc(t.title)}">${esc(t.title)}</span>`;
+  let body = '';
+  for (const o of os) {
+    const ks = focusKrs(o.id), open = shown(o.id, 2), s = pd(o.start), e = pd(o.end), p = objProg(o);
+    const ob = s && e ? `<div class="bar obj" style="left:${x(s)}px;width:${x(e) - x(s) + ppd}px" data-open="obj:${esc(o.id)}" title="${esc(o.title)} · ${esc(periodLabel(o))}"><span class="fill" style="width:${((p||0)*100).toFixed(1)}%"></span><span class="lbl">${p == null ? 'ikke målbart' : Math.round(p*100) + ' %'} · ${esc(periodLabel(o))}</span></div>` : '';
+    const oc = cv(objColor(o));
+    body += row('o', 54, `${caret(o.id, open, ks.length)}<span class="chip code oc">${esc(o.code)}</span><span class="txt" data-open="obj:${esc(o.id)}" title="${esc(o.title)}">${esc(o.title)}</span>`, ob, oc);
+    if (!open) continue;
+    for (const k of ks) {
+      const kt = tasksOfKr(k.id), kopen = shown(k.id, 3), kp = krProg(k);
+      const kb = s && e ? `<div class="bar kr" style="left:${x(s)}px;width:${x(e) - x(s) + ppd}px" data-open="kr:${esc(k.id)}" title="${esc(k.code)} ${esc(k.title)}"><span class="fill" style="width:${((kp||0)*100).toFixed(1)}%"></span><span class="lbl"><i class="sdot" style="background:${krColor(k.status)}"></i>${esc(k.status || 'Ikke vurdert')}${kp != null ? ' · ' + Math.round(kp*100) + ' %' : ''}</span></div>` : '';
+      body += row('k', 50, `<span style="width:18px"></span>${caret(k.id, kopen, kt.length)}<span class="chip code oc">${esc(k.code)}</span><span class="txt" data-open="kr:${esc(k.id)}" title="${esc(k.title)}">${esc(k.title)}</span>`, kb, oc);
+      if (kopen) kt.forEach(t => body += row('t', 44, tLab(t, 66), taskEl(t), oc));
+    }
+    if (UI.level >= 3 && !UI.focusKr) tasksOfObjDirect(o.id).forEach(t => body += row('t', 44, tLab(t, 40), taskEl(t), oc));
+    body += `<div class="tl-gap" style="${oc}"></div>`;
+  }
+  if (UI.level >= 3 && showUnlinked()) { const un = unlinked(); if (un.length) { body += row('o', 40, `<span class="caret ph"></span><span class="txt">Ikke koblet til mål</span>`, '', '--c:#8c8195'); un.forEach(t => body += row('t', 38, tLab(t, 30), taskEl(t), '--c:#8c8195')); } }
+  if (!body) body = `<div class="empty">Ingenting å vise med dette filteret.</div>`;
+  const tx = x(t0);
+  return `
+  <div class="view-head"><div><h1>Tidslinje</h1><p>Hvert mål har sin fargefamilie: Objective, Key Results og oppgaver i samme farge. Oppgavene er blokker fra start til frist. Klikk en blokk for å endre ansvarlig og datoer.</p></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">${levelSeg()}<div class="seg" role="group" aria-label="Zoom">${[['aar','År'],['mnd','Måned'],['uke','Uke']].map(([z,t]) => `<button data-zoom="${z}" aria-pressed="${UI.zoom === z}">${t}</button>`).join('')}</div><button class="btn" data-today>I dag</button></div></div>
+  ${focusBar()}
+  <div class="tl-scroll" id="tlScroll"><div class="tl" style="--lw:${LW}px">
+    <div class="tl-row tl-head" style="height:54px"><div class="tl-lab"><span class="eyebrow">Mål og oppgaver</span></div><div class="tl-track" style="width:${W}px">${head}</div></div>
+    <div class="tl-grid" style="left:${LW}px;width:${W}px">${grid}</div>
+    ${body}
+    <div class="tl-today" style="left:${LW + tx}px"><span>I dag</span></div>
+  </div></div>
+  <div class="tl-legend"><span class="faint">Oppgaver i målets farge:</span><span><span class="sw" style="background:color-mix(in srgb,#a98bf5 38%,#231e29)"></span>Ikke startet</span><span><span class="sw" style="background:color-mix(in srgb,#a98bf5 72%,#231e29)"></span>I arbeid</span><span><span class="sw" style="background:#a98bf5"></span>Ferdig ✓</span><span><span class="sw" style="background:#e0615b"></span>Blokkert</span><span><span class="sw" style="box-shadow:0 0 0 2px var(--bad);background:transparent"></span>Forfalt</span><span class="faint">Uten startdato vises oppgaven som to uker før fristen.</span></div>`;
+}
+
+/* ---------- Mine oppgaver ---------- */
+function toggleDone(id) {
+  const t = S.task[id]; if (!t || !canWrite) return;
+  const done = cols().find(c => c.kind === 'done'), todo = cols().find(c => c.kind === 'todo') || cols()[0];
+  if (!done) { toast('Tavla har ingen kolonne som betyr Ferdig'); return; }
+  const isDone = tKind(t) === 'done';
+  patch('task', id, { status: isDone ? todo.id : done.id }, true);
+  toast(isDone ? 'Satt tilbake til ' + todo.title : 'Ferdig. Bra jobbet.');
+}
+function viewMine() {
+  const team = teamPeople();
+  const meTeam = meName ? team.find(p => ftok(p.name) === ftok(meName)) : null;
+  let who = UI.mine && team.some(p => p.name === UI.mine) ? UI.mine : (meTeam ? meTeam.name : (team[0] && team[0].name) || '');
+  const openCount = p => allTasks().filter(t => tKind(t) !== 'done' && ownerHas(t.owner, p)).length;
+  const bar = `<div class="pbar-people" role="group" aria-label="Velg person">${team.map(p => `<button class="pchip" data-mine="${esc(p.name)}" aria-pressed="${p.name === who}" title="${esc(p.name)}${p.member ? '' : ' (har ikke tilgang ennå)'}">${avatar(p.name)}<span>${esc(p.name.split(' ')[0])}${meTeam && meTeam.name === p.name ? ' <small>(deg)</small>' : ''}</span><b class="num">${openCount(p.name)}</b></button>`).join('')}</div>`;
+  if (!who) return `<div class="view-head"><div><h1>Mine oppgaver</h1><p>Det du skal gjøre, sortert etter når det haster.</p></div></div>
+    <div class="card pickme"><h2 style="margin-bottom:8px">Ingen ansvarlige ennå</h2><p class="muted">Legg til ansvarlig på oppgaver i OKR-visningen eller på tavla, så får hver person sin egen knapp her.</p></div>`;
+  const isMeSel = !!(meTeam && meTeam.name === who);
+  const match = x => ownerHas(x.owner, who) || (isMeSel && meId && x.ownerId === meId);
+  const name = who.split(' ')[0];
+  const mine = allTasks().filter(match);
+  const open = mine.filter(t => tKind(t) !== 'done');
+  const t0 = today(); const dow = (t0.getDay() + 6) % 7; const eow = new Date(t0.getTime() + (6 - dow) * DAY); const d30 = new Date(t0.getTime() + 30 * DAY);
+  const G = [['Forfalt', 'bad', t => pd(t.due) && pd(t.due) < t0], ['Denne uka', '', t => pd(t.due) && pd(t.due) >= t0 && pd(t.due) <= eow], ['Neste 30 dager', '', t => pd(t.due) && pd(t.due) > eow && pd(t.due) <= d30], ['Senere', '', t => pd(t.due) && pd(t.due) > d30], ['Uten frist', '', t => !pd(t.due)]];
+  const doneRecent = mine.filter(t => tKind(t) === 'done' && t.updatedAt && (Date.now() - new Date(t.updatedAt)) < 14 * DAY);
+  const row = t => { const o = taskObj(t), k = t.krId && S.kr[t.krId], dk = tKind(t) === 'done';
+    return `<div class="mrow${dk ? ' done' : ''}" style="${cv(objColor(o))}">
+      ${canWrite ? `<button class="check${dk ? ' on' : ''}" data-done="${esc(t.id)}" aria-label="${dk ? 'Marker som ikke ferdig' : 'Marker som ferdig'}" title="${dk ? 'Angre ferdig' : 'Marker som ferdig'}">✓</button>` : '<span></span>'}
+      <div class="tt" data-open="task:${esc(t.id)}"><b>${esc(t.title)}</b><div class="meta">${o ? `<span class="chip code oc">${esc(o.code)}</span>` : '<span class="chip">Ikke koblet</span>'}${k ? `<span class="chip krc" title="${esc(k.title)}">${esc(k.code)}</span><span>${esc(shortT(k.title, 60))}</span>` : (o ? `<span>${esc(shortT(o.title, 60))}</span>` : '')}${t.next && !dk ? `<span>· Neste: ${esc(t.next)}</span>` : ''}</div></div>
+      ${dateEdit('task', t.id, 'due', t.due, dueState(t), 'Frist')}
+      ${taskSel(t)}</div>`; };
+  const myKrs = [], myObjs = [];
+  const counts = G.map(([, , f]) => open.filter(f).length);
+  let h = `<div class="view-head"><div><h1>${isMeSel ? 'Mine oppgaver' : esc(name) + ' sine oppgaver'}</h1><p>Velg person under. Oppgavene er sortert etter når de haster. Kryss av når noe er ferdig.</p></div></div>
+  ${bar}
+  <div class="mine-head"><div class="mstat ${counts[0] ? 'bad' : ''}"><b>${counts[0]}</b><span>forfalt</span></div><div class="mstat ${counts[1] ? 'warn' : ''}"><b>${counts[1]}</b><span>denne uka</span></div><div class="mstat"><b>${counts[2]}</b><span>neste 30 dager</span></div><div class="mstat"><b>${open.length}</b><span>åpne totalt</span></div></div>`;
+  if (!open.length) h += `<div class="card empty" style="margin-bottom:22px">Ingen åpne oppgaver. ${canWrite ? 'Legg til ansvarlig på oppgaver i OKR-visningen eller på tavla.' : ''}</div>`;
+  G.forEach(([label, cls, f], i) => { const list = open.filter(f); if (list.length) h += `<section class="mgroup ${cls}"><h2>${label}<span class="n">${list.length}</span></h2><div class="mlist">${list.map(row).join('')}</div></section>`; });
+  if (myKrs.length || myObjs.length) h += `<section class="mgroup"><h2>${isMeSel ? 'Mål du eier' : 'Mål ' + esc(name) + ' eier'}<span class="n">Oppdater nåverdi og status jevnlig</span></h2><div class="mlist">${myObjs.map(o => `<div class="mkr" style="${cv(objColor(o))}"><div class="tt" data-open="obj:${esc(o.id)}" style="cursor:pointer"><span class="chip code oc">${esc(o.code)}</span> <b style="font-weight:600">${esc(o.title)}</b></div><span></span>${pbar(objProg(o), elapsed(o), 'oc')}</div>`).join('')}${myKrs.map(k => `<div class="mkr" style="${cv(objColor(S.obj[k.objId]))}"><div class="tt" data-open="kr:${esc(k.id)}" style="cursor:pointer"><span class="chip code oc">${esc(k.code)}</span> ${esc(k.title)}</div><div class="vals">${numEdit('kr', k.id, 'current', k.current, 'Nåverdi')}<span class="arrow">→</span><span>${fmtN(num(k.target))}</span><span class="faint">${esc(k.unit || '')}</span></div>${selPill('kr', k.id, KR_ST[k.status] ? k.status : 'Ikke vurdert', KR_ST_LIST, krCls)}</div>`).join('')}</div></section>`;
+  if (doneRecent.length) h += `<section class="mgroup"><h2>Ferdig siste 14 dager<span class="n">${doneRecent.length}</span></h2><div class="mlist">${doneRecent.map(row).join('')}</div></section>`;
+  return h;
+}
+
+/* ---------- Tavle ---------- */
+function viewTavle() {
+  const q = UI.q.trim().toLowerCase();
+  const list = visTasks().filter(t => {
+    const o = taskObj(t);
+    if (UI.focus === '__none' && o) return false;
+    if (UI.focus && UI.focus !== '__none' && (!o || o.id !== UI.focus)) return false;
+    if (UI.focusKr && UI.focus && t.krId !== UI.focusKr) return false;
+    if (q && !(`${t.title} ${t.next||''} ${t.owner||''} ${linkCode(t)||''} ${t.comment||''}`.toLowerCase().includes(q))) return false;
+    return true;
+  });
+  const cs = cols();
+  const colHead = (c, i, n) => {
+    const ctl = canWrite ? `<span class="colctl">${i > 0 ? `<button data-colmove="${esc(c.id)}" data-dir="-1" aria-label="Flytt kolonnen til venstre" title="Flytt til venstre">‹</button>` : ''}${i < cs.length - 1 ? `<button data-colmove="${esc(c.id)}" data-dir="1" aria-label="Flytt kolonnen til høyre" title="Flytt til høyre">›</button>` : ''}<button data-open="board:main" aria-label="Rediger kolonner" title="Rediger kolonner">⋯</button></span>` : '';
+    return `<div class="col-h"><i></i>${canWrite ? `<input class="colname" data-colname="${esc(c.id)}" value="${esc(c.title)}" aria-label="Navn på kolonne" title="Klikk for å gi nytt navn">` : `<span>${esc(c.title)}</span>`}<span class="n">${n}</span>${ctl}</div>`;
+  };
+  const cardsFor = (items, c) => {
+    if (c.kind !== 'done' || UI.showDone || items.length <= 3) return items.map(card).join('');
+    const sorted = items.slice().sort((x, y) => String(y.updatedAt || '').localeCompare(String(x.updatedAt || '')));
+    return sorted.slice(0, 3).map(card).join('') + `<button class="showdone" data-showdone>Vis alle ${items.length} ferdige</button>`;
+  };
+  const col = (c, i, items, laneKey) => `<section class="col" style="--sc:${colColor(c)}" data-col="${esc(c.id)}" aria-label="${esc(c.title)}">
+      ${colHead(c, i, items.length)}
+      <div class="cards">${cardsFor(items, c)}</div>
+      ${canWrite ? `<form class="qadd" data-qadd="${esc(c.id)}"${laneKey ? ` data-qobj="${esc(laneKey)}"` : ''}><input id="qadd-${laneKey || 'all'}-${i}" placeholder="+ Ny oppgave" aria-label="Ny oppgave i ${esc(c.title)}"></form>` : ''}
+    </section>`;
+  const grid = `grid-template-columns:repeat(${cs.length},minmax(240px,1fr))${canWrite ? ' 120px' : ''}`;
+  let boardHtml;
+  if (UI.lanes) {
+    const lanes = focusObjs().map(o => ({ key: o.id, o, items: list.filter(t => { const x = taskObj(t); return x && x.id === o.id; }) }));
+    const un = list.filter(t => !taskObj(t)); if (showUnlinked() && un.length) lanes.push({ key: '', o: null, items: un });
+    boardHtml = lanes.map(l => `<section class="lane" style="${cv(l.o ? objColor(l.o) : '#8c8195')}"><div class="lane-h">${l.o ? `<span class="chip code oc">${esc(l.o.code)}</span>${esc(l.o.title)}` : 'Ikke koblet til mål'}<span class="n">${l.items.length} oppgaver · ${l.items.filter(t => tKind(t) === 'done').length} ferdig</span></div>
+      <div class="board" style="${grid}">${cs.map((c, i) => col(c, i, l.items.filter(t => tCol(t).id === c.id), l.key)).join('')}${canWrite ? '<span></span>' : ''}</div></section>`).join('') || '<div class="card empty">Ingenting å vise med dette filteret.</div>';
+  } else {
+    boardHtml = `<div class="board" style="${grid}">${cs.map((c, i) => col(c, i, list.filter(t => tCol(t).id === c.id), '')).join('')}${canWrite ? '<button class="addcol" data-addcol>+ Kolonne</button>' : ''}</div>`;
+  }
+  const fo = UI.focus && S.obj[UI.focus];
+  return `
+  <div class="view-head"><div><h1>Tavle</h1><p>Dra kort mellom kolonnene. Sett ansvarlig og frist rett på kortet. Klikk kortet for alle felt.</p></div>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><div class="seg" role="group" aria-label="Oppsett"><button data-lanes="0" aria-pressed="${!UI.lanes}">Én tavle</button><button data-lanes="1" aria-pressed="${UI.lanes}">Rad per mål</button></div><input class="search" id="search" type="search" placeholder="Søk i oppgaver" value="${esc(UI.q)}" aria-label="Søk i oppgaver"><span class="faint num" style="font-size:12px;white-space:nowrap">${list.length} oppgaver</span></div></div>
+  ${focusBar()}
+  ${fo && canWrite ? `<p class="faint" style="font-size:12px;margin:-6px 0 12px">Nye oppgaver du legger til nå kobles til ${esc(UI.focusKr && S.kr[UI.focusKr] ? S.kr[UI.focusKr].code : fo.code)}.</p>` : ''}
+  ${boardHtml}`;
+}
+function card(t) {
+  const ds = dueState(t);
+  const o = taskObj(t), k = t.krId && S.kr[t.krId];
+  return `<div class="kcard${tKind(t) === 'blocked' ? ' blocked' : ''}${tKind(t) === 'done' ? ' done' : ''}" style="${cv(objColor(o))}" draggable="${canWrite}" data-card="${esc(t.id)}" data-open="task:${esc(t.id)}" role="button" tabindex="0" aria-label="${esc(t.title)}">
+    <div class="top">${o ? `<button class="chip code oc" data-focus="${esc(o.id)}" title="Vis bare ${esc(o.code)}: ${esc(o.title)}">${esc(o.code)}</button>` : '<span class="chip">Ikke koblet</span>'}${k ? `<button class="chip krc" data-focus="${esc(o.id)}" data-focuskr="${esc(k.id)}" title="${esc(k.title)}">${esc(k.code)}</button>` : ''}${t.priority ? `<span class="prio-tag ${t.priority === 'P1' ? 'p1' : ''}">${esc(t.priority)}</span>` : ''}${tKind(t) === 'blocked' ? `<span class="blk">${esc(tCol(t).title.toUpperCase())}</span>` : ''}</div>
+    <div class="t">${esc(t.title)}</div>
+    ${k ? `<div class="krline" title="${esc(k.title)}">Flytter ${esc(k.code)}: ${esc(shortT(k.title, 70))}</div>` : ''}
+    ${t.next && tKind(t) !== 'done' ? `<div class="next">Neste: ${esc(t.next)}</div>` : ''}
+    <div class="bot">${ownerEdit('task', t.id, t.owner)}${dateEdit('task', t.id, 'due', t.due, ds, 'Frist')}</div>
+  </div>`;
+}
+
+/* ---------- Skuff (redigering) ---------- */
+const dr = $('#drawer'), scrim = $('#scrim');
+function openDrawer(kind, id) {
+  if (kind === 'view') { location.hash = id; return; }
+  let html = '';
+  const dis = canWrite ? '' : ' disabled';
+  if (kind === 'help') html = helpHtml();
+  else if (kind === 'board') html = boardHtml();
+  else if (kind === 'meta') {
+    const m = S.meta || { vision: '', horizon: '', priorities: [] };
+    html = head('Strategi', 'Visjon og prioriteringer') + `<div class="dr-b">
+      <div class="f"><label for="f-vision">Visjon · Hvor skal vi?</label><textarea id="f-vision" class="title" data-f="vision"${dis}>${esc(m.vision)}</textarea></div>
+      <div class="f"><label for="f-horizon">Tidshorisont</label><input id="f-horizon" data-f="horizon" value="${esc(m.horizon)}"${dis}></div>
+      <div class="f"><span class="lab">Strategiske prioriteringer · Hva prioriterer vi?</span><span class="hint">Få flerårige valg. Objectives kobles til disse.</span>
+      ${(m.priorities||[]).map((p,i) => `<div style="display:flex;gap:8px"><input id="f-pc${i}" style="width:72px" data-prio="${i}" data-pk="code" value="${esc(p.code)}" aria-label="Kode"${dis}><input id="f-pt${i}" data-prio="${i}" data-pk="title" value="${esc(p.title)}" aria-label="Prioritet"${dis}></div>`).join('')}
+      ${canWrite ? '<button class="btn" data-addprio style="justify-self:start">+ Prioritet</button>' : ''}</div></div>` + foot(m, false);
+  } else {
+    const col = kind === 'obj' ? 'obj' : kind === 'kr' ? 'kr' : 'task';
+    const d = S[col][id]; if (!d) return;
+    if (kind === 'obj') html = head('Objective', d.code) + `<div class="dr-b">
+      <div class="f"><label for="f-title">Objective · Hva skal vi oppnå nå?</label><textarea id="f-title" class="title" data-f="title"${dis}>${esc(d.title)}</textarea><span class="hint">Beskriv en ønsket forflytning, ikke en aktivitet.</span></div>
+      <div class="f"><label for="f-status">Status</label><select id="f-status" data-f="status"${dis}>${O_ST.map(s => `<option${s === d.status ? ' selected' : ''}>${s}</option>`).join('')}</select></div>
+      <div class="grid2"><div class="f"><label for="f-start">Periode fra</label><input id="f-start" type="date" data-f="start" value="${esc(d.start)}"${dis}></div><div class="f"><label for="f-end">Periode til</label><input id="f-end" type="date" data-f="end" value="${esc(d.end)}"${dis}></div></div>
+      <div class="f"><span class="lab">Strategiske prioriteringer</span><div class="checks">${((S.meta && S.meta.priorities) || []).map((p,i) => `<label for="f-sp${i}" title="${esc(p.title)}"><input id="f-sp${i}" type="checkbox" data-f="sp" value="${esc(p.code)}"${(d.sp||[]).includes(p.code) ? ' checked' : ''}${dis}>${esc(p.code)} ${esc(p.title)}</label>`).join('')}</div></div>
+      <div class="f"><span class="lab">Farge</span><div class="swatches" role="group" aria-label="Farge for målet">${OPAL.map((c,i) => `<button type="button" data-swatch="${c}" style="--sw:${c}" aria-pressed="${objColor(d) === c}" title="${OPAL_N[i]}" aria-label="${OPAL_N[i]}"${dis}></button>`).join('')}</div><span class="hint">Fargen følger målet i alle visningene.</span></div>
+      <div class="f"><label for="f-code">Kode</label><input id="f-code" data-f="code" value="${esc(d.code)}" style="width:110px"${dis}></div>
+      <div class="qa"><div class="h">Key Results under dette målet</div>${krsOf(id).map(k => `<div class="c" style="cursor:pointer" data-open="kr:${esc(k.id)}"><span class="chip code">${esc(k.code)}</span>${esc(k.title.slice(0,70))}${k.title.length > 70 ? '…' : ''}</div>`).join('') || '<div class="c">Ingen ennå</div>'}
+      ${canWrite ? `<button class="btn" data-add="kr" data-obj="${esc(id)}" style="justify-self:start;margin-top:4px">+ Key Result</button>` : ''}</div></div>` + foot(d, true);
+    if (kind === 'kr') html = head('Key Result', d.code) + `<div class="dr-b">
+      <div class="f"><label for="f-title">Key Result · Hvordan vet vi at vi lykkes?</label><textarea id="f-title" class="title" data-f="title"${dis}>${esc(d.title)}</textarea><span class="hint">Et målbart resultat i samme periode som Objective. Ikke en leveranse.</span></div>
+      <div class="grid3"><div class="f"><label for="f-b">Baseline</label><input id="f-b" inputmode="decimal" data-f="baseline" data-num value="${num(d.baseline) ?? ''}"${dis}></div><div class="f"><label for="f-c">Nå</label><input id="f-c" inputmode="decimal" data-f="current" data-num value="${num(d.current) ?? ''}"${dis}></div><div class="f"><label for="f-t">Mål</label><input id="f-t" inputmode="decimal" data-f="target" data-num value="${num(d.target) ?? ''}"${dis}></div></div>
+      <div class="grid2"><div class="f"><label for="f-unit">Enhet</label><input id="f-unit" data-f="unit" value="${esc(d.unit)}" placeholder="%, antall, NOK"${dis}></div><div class="f"><label for="f-vd">Nåverdi målt</label><input id="f-vd" type="date" data-f="valueDate" value="${esc(d.valueDate)}"${dis}></div></div>
+      <div class="grid2"><div class="f"><label for="f-status">Status</label><select id="f-status" data-f="status"${dis}>${KR_ST_LIST.map(s => `<option${s === (KR_ST[d.status] ? d.status : 'Ikke vurdert') ? ' selected' : ''}>${s}</option>`).join('')}</select></div>
+      <div class="f"><label for="f-type">Type</label><select id="f-type" data-f="type"${dis}>${['Committed','Stretch'].map(s => `<option${s === d.type ? ' selected' : ''}>${s}</option>`).join('')}</select></div></div>
+      <div class="f"><label for="f-obj">Objective</label><select id="f-obj" data-f="objId"${dis}>${objs().map(o => `<option value="${esc(o.id)}"${o.id === d.objId ? ' selected' : ''}>${esc(o.code)}</option>`).join('')}</select></div>
+      <div class="f"><label for="f-lead">Leading indicator</label><input id="f-lead" data-f="leading" value="${esc(d.leading)}"${dis}><span class="hint">Et tidlig signal dere kan følge ukentlig eller månedlig.</span></div>
+      <div class="grid2"><div class="f"><label for="f-src">Datakilde</label><input id="f-src" data-f="source" value="${esc(d.source)}"${dis}></div><div class="f"><label for="f-code">Kode</label><input id="f-code" data-f="code" value="${esc(d.code)}"${dis}></div></div>
+      <div class="qa" id="qa">${qaHtml(d)}</div>
+      <div class="qa"><div class="h">Oppgaver</div>${allTasks().filter(t => t.krId === id).map(t => `<div class="c" style="cursor:pointer" data-open="task:${esc(t.id)}">${tPill(t.status)} ${esc(t.title)}</div>`).join('') || '<div class="c">Ingen ennå</div>'}
+      ${canWrite ? `<button class="btn" data-add="task" data-kr="${esc(id)}" style="justify-self:start;margin-top:4px">+ Oppgave</button>` : ''}</div></div>` + foot(d, true);
+    if (kind === 'task') {
+      const linkVal = d.krId && S.kr[d.krId] ? 'kr:' + d.krId : d.objId && S.obj[d.objId] ? 'obj:' + d.objId : '';
+      html = head('Oppgave', d.code) + `<div class="dr-b">
+      <div class="f"><label for="f-title">Oppgave · Hva skal gjøres?</label><textarea id="f-title" class="title" data-f="title"${dis}>${esc(d.title)}</textarea><span class="hint">Én konkret handling, én ansvarlig, én frist.</span></div>
+      <div class="grid2"><div class="f"><label for="f-owner">Ansvarlig</label>${ownerEdit(kind, id, d.owner).replace('class="ownerbtn', 'id="f-owner" class="ownerbtn field')}</div>
+      <div class="f"><label for="f-status">Status</label><select id="f-status" data-f="status"${dis}>${cols().map(c => `<option value="${esc(c.id)}"${c.id === tCol(d).id ? ' selected' : ''}>${esc(c.title)}</option>`).join('')}</select></div></div>
+      <div class="grid3"><div class="f"><label for="f-start">Start</label><input id="f-start" type="date" data-f="start" value="${esc(d.start)}"${dis}></div><div class="f"><label for="f-due">Frist</label><input id="f-due" type="date" data-f="due" value="${esc(d.due)}"${dis}></div>
+      <div class="f"><label for="f-prio">Prioritet</label><select id="f-prio" data-f="priority"${dis}>${['P1','P2','P3'].map(s => `<option${s === d.priority ? ' selected' : ''}>${s}</option>`).join('')}</select></div></div>
+      <div class="f"><label for="f-link">Bidrar til</label><select id="f-link" data-link${dis}><option value="">Ikke koblet</option>${objs().map(o => `<optgroup label="${esc(o.code)} · ${esc(o.title.slice(0,50))}"><option value="obj:${esc(o.id)}"${linkVal === 'obj:' + o.id ? ' selected' : ''}>${esc(o.code)} (hele målet)</option>${krsOf(o.id).map(k => `<option value="kr:${esc(k.id)}"${linkVal === 'kr:' + k.id ? ' selected' : ''}>${esc(k.code)} · ${esc(k.title.slice(0,60))}</option>`).join('')}</optgroup>`).join('')}</select><span class="hint">Koble til det Key Result oppgaven skal flytte.</span></div>
+      <div class="f"><label for="f-next">Neste handling</label><input id="f-next" data-f="next" value="${esc(d.next)}"${dis}></div>
+      <div class="f"><label for="f-com">Kommentar</label><textarea id="f-com" data-f="comment"${dis}>${esc(d.comment)}</textarea></div>
+      <div class="f"><label for="f-code">Kode</label><input id="f-code" data-f="code" value="${esc(d.code)}" style="width:110px"${dis}></div></div>` + foot(d, true);
+    }
+  }
+  UI.drawer = { kind, id };
+  const dObj = kind === 'obj' ? S.obj[id] : kind === 'kr' ? S.obj[(S.kr[id]||{}).objId] : kind === 'task' ? taskObj(S.task[id] || {}) : null;
+  dr.style.setProperty('--c', dObj ? objColor(dObj) : '#4BC2A2');
+  dr.innerHTML = html;
+  dr.classList.add('on'); scrim.classList.add('on'); dr.setAttribute('aria-hidden', 'false');
+  resolveFoot();
+  setTimeout(() => { const f = dr.querySelector('textarea,input,select,button.x'); f && f.focus({ preventScroll: true }); }, 60);
+}
+const head = (k, code) => `<div class="dr-h"><span class="k">${esc(k)}</span>${code ? `<span class="chip code oc">${esc(code)}</span>` : ''}<button class="iconbtn x" data-close aria-label="Lukk">✕</button><h2 id="drTitle" style="position:absolute;left:-9999px">${esc(k)}</h2></div>`;
+const foot = (d, del) => `<div class="dr-f"><span class="grow" id="drMeta">${d && d.updatedAt ? 'Sist endret ' + fmtD(d.updatedAt.slice(0,10)) : ''}</span>${canWrite ? '<span class="faint">Endringer lagres automatisk</span>' : '<span>Du har lesetilgang</span>'}${del && canWrite ? '<span id="delWrap"><button class="btn danger" data-del>Slett</button></span>' : ''}</div>`;
+async function resolveFoot() {
+  const u = UI.drawer; if (!u || !user || !user.profiles) return;
+  const col = u.kind === 'obj' ? 'obj' : u.kind === 'kr' ? 'kr' : u.kind === 'task' ? 'task' : null;
+  const d = col ? S[col][u.id] : u.kind === 'meta' ? S.meta : null;
+  if (!d || !d.updatedBy) return;
+  try { const ps = await user.profiles([d.updatedBy]); const n = ps && ps[d.updatedBy] && ps[d.updatedBy].name; const el = $('#drMeta'); if (n && el && d.updatedAt) el.textContent = 'Sist endret ' + fmtD(d.updatedAt.slice(0,10)) + ' av ' + n; } catch (e) {}
+}
+function qaHtml(d) {
+  const c = [[num(d.baseline) != null,'Har baseline'],[num(d.target) != null,'Har mål (target)'],[num(d.current) != null,'Har nåverdi'],[!!(d.unit||'').trim(),'Har enhet'],[!!(d.source||'').trim(),'Har datakilde']];
+  return `<div class="h">Styringsklar? ${c.filter(x => x[0]).length} av ${c.length}</div>${c.map(([ok,t]) => `<div class="c${ok ? ' y' : ''}"><b>✓</b>${t}</div>`).join('')}<div class="c faint" style="margin-top:4px">Sjekk selv: beskriver det et resultat, ikke en aktivitet? Kan Figment påvirke det i perioden?</div>`;
+}
+function closeDrawer() { flushAll(); dr.classList.remove('on'); scrim.classList.remove('on'); dr.setAttribute('aria-hidden', 'true'); UI.drawer = null; render(); }
+function helpHtml() {
+  return head('Slik fungerer det') + `<div class="dr-b help">
+    <p>Ett felles sted for hvor vi skal, hva vi skal oppnå nå og hvem som gjør hva. Alle med tilgang ser de samme dataene, og endringer lagres med en gang.</p>
+    <h3>Kjeden fra strategi til oppgave</h3>
+    <div class="ladder">
+      <div><b>Visjon</b><span>Hvor skal vi? Desember 2029.</span></div>
+      <div><b>Prioritering</b><span>Hva prioriterer vi? Fire flerårige valg (SP1–SP4).</span></div>
+      <div><b>Objective</b><span>Hva skal vi oppnå nå? Ønsket forflytning i perioden. Maks tre aktive.</span></div>
+      <div><b>Key Result</b><span>Hvordan vet vi at vi lykkes? Baseline, nå og mål.</span></div>
+      <div><b>Oppgave</b><span>Hva skal jeg gjøre? Én handling, én ansvarlig, én frist.</span></div>
+    </div>
+    <h3>Visningene</h3>
+    <ul><li><b>Oversikt</b>: status, fremgang mot forventet og det som krever oppmerksomhet.</li>
+    <li><b>OKR og oppgaver</b>: treet fra Objective til oppgave. Oppdater nåverdien på KR direkte.</li>
+    <li><b>Tidslinje</b>: perioder og frister. Velg detaljnivå helt ned til oppgave.</li>
+    <li><b>Tavle</b>: daglig arbeid. Dra kort mellom kolonner.</li></ul>
+    <p>Velg deg selv i personvelgeren øverst for å se bare dine oppgaver. Tastene 1–5 bytter visning, og N lager en ny oppgave.</p>
+    <h3>Rytme</h3>
+    <ul><li><b>Ukentlig, 25 min</b>: tavla. Bare blokkert, forfalt og beslutninger.</li>
+    <li><b>Månedlig</b>: OKR-visningen. Oppdater nåverdi og status, og flytt ressurser.</li>
+    <li><b>Kvartalsvis</b>: score Objectives, lær, og velg neste periodes mål.</li></ul>
+    <h3>Fremgang</h3>
+    <p>KR-fremgang = (nå − baseline) / (mål − baseline). Et KR uten baseline og mål vises som «ikke målbart ennå». Oppgaver ferdig måler leveranse. KR-fremgang måler effekt. Begge vises, fordi de kan spre seg.</p>
+  </div>`;
+}
+
+/* ---------- Personvelger ---------- */
+const pop = $('#pop'); let pick = null, dirCache = {};
+async function directory(q) {
+  if (window.__FIGMENT_DEMO) { const ps = window.__FIGMENT_DEMO.people || []; return ps.filter(p => p.name.toLowerCase().includes(q.toLowerCase())); }
+  if (!user || !user.search) return [];
+  if (dirCache[q]) return dirCache[q];
+  try {
+    const r = await user.search(q);
+    const arr = Array.isArray(r) ? r : (r && (r.results || r.hits || r.users || r.profiles)) || [];
+    const out = arr.map(h => ({ id: h.id, name: h.name || (h.profile && h.profile.name) || h.displayName || '', email: h.email || '', guest: !!h.guest })).filter(h => h.name);
+    dirCache[q] = out; return out;
+  } catch (e) { return []; }
+}
+function openPicker(btn) {
+  const [col, id] = btn.dataset.pick.split(':'); const d = S[col] && S[col][id]; if (!d) return;
+  pick = { col, id, btn, active: 0 };
+  pop.innerHTML = `<input id="popq" class="popq" placeholder="Søk etter person, eller skriv et navn" autocomplete="off" aria-label="Søk etter person"><div class="poplist" id="poplist" role="listbox"><div class="pophint">Henter personer…</div></div>`;
+  pop.hidden = false; placePicker();
+  const q = $('#popq'); q.focus();
+  q.addEventListener('input', () => { pick.active = 0; fillPicker(q.value); });
+  q.addEventListener('keydown', e => {
+    const items = [...pop.querySelectorAll('[data-pickval]')];
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); pick.active = (pick.active + (e.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length; items.forEach((it, i) => it.classList.toggle('on', i === pick.active)); items[pick.active] && items[pick.active].scrollIntoView({ block: 'nearest' }); }
+    else if (e.key === 'Enter') { e.preventDefault(); items[pick.active] && items[pick.active].click(); }
+    else if (e.key === 'Escape') { e.stopPropagation(); closePicker(); }
+  });
+  fillPicker('');
+}
+function placePicker() {
+  if (!pick) return; if (!document.contains(pick.btn)) { const nb = document.querySelector(`[data-pick="${pick.col}:${CSS.escape(pick.id)}"]`); if (!nb) return; pick.btn = nb; } const r = pick.btn.getBoundingClientRect(); const w = 300;
+  let left = Math.min(r.left, window.innerWidth - w - 12); left = Math.max(12, left);
+  const below = window.innerHeight - r.bottom > 340;
+  pop.style.left = left + 'px'; pop.style.width = w + 'px';
+  if (below) { pop.style.top = (r.bottom + 6) + 'px'; pop.style.bottom = ''; } else { pop.style.top = ''; pop.style.bottom = (window.innerHeight - r.top + 6) + 'px'; }
+}
+async function fillPicker(q) {
+  const my = pick; const qq = q.trim();
+  const dir = await directory(qq);
+  if (pick !== my) return;
+  const cur = (S[my.col][my.id] || {}).owner || '';
+  const dirNames = new Set(dir.map(p => p.name));
+  const used = people().filter(n => !dirNames.has(n) && (!qq || n.toLowerCase().includes(qq.toLowerCase())));
+  const row = (val, pid, name, sub) => `<button type="button" class="popitem${val === cur ? ' cur' : ''}" role="option" data-pickval="${esc(val)}" data-pickid="${esc(pid || '')}">${avatar(name)}<span class="pn">${esc(name)}${sub ? `<small>${esc(sub)}</small>` : ''}</span>${val === cur ? '<span class="ck">✓</span>' : ''}</button>`;
+  let h = '';
+  if (dir.length) h += `<div class="pophead">Har tilgang til verktøyet</div>` + dir.map(p => row(p.name, p.id, p.name, p.guest ? 'Gjest' : (p.email || ''))).join('');
+  if (used.length) h += `<div class="pophead">Brukt tidligere</div>` + used.map(n => row(n, '', n, '')).join('');
+  const exact = [...dirNames, ...people()].some(n => n.toLowerCase() === qq.toLowerCase());
+  if (qq && !exact) h += `<div class="pophead">Ny person</div><button type="button" class="popitem" role="option" data-pickval="${esc(qq)}" data-pickid=""><span class="av" style="background:${avColor(qq)}">${esc(initials(qq))}</span><span class="pn">Legg til «${esc(qq)}»<small>Har ikke tilgang ennå. Del lenken med personen.</small></span></button>`;
+  if (!h) h = `<div class="pophint">${user && user.search ? 'Ingen treff. Skriv et navn for å legge det til.' : 'Skriv et navn for å legge til en person.'}</div>`;
+  if (hasOwner(cur)) h += `<button type="button" class="popitem rm" data-pickval="" data-pickid=""><span class="av none">✕</span><span class="pn">Fjern ansvarlig</span></button>`;
+  const list = $('#poplist'); if (!list) return; list.innerHTML = h;
+  const first = list.querySelector('[data-pickval]'); first && first.classList.add('on');
+}
+function closePicker() { pop.hidden = true; pop.innerHTML = ''; const b = pick && pick.btn; pick = null; b && document.contains(b) && b.focus(); }
+pop.addEventListener('click', e => {
+  const it = e.target.closest('[data-pickval]'); if (!it || !pick) return;
+  const name = it.dataset.pickval, pid = it.dataset.pickid || null;
+  const { col, id } = pick;
+  patch(col, id, { owner: name, ownerId: pid }, true);
+  document.querySelectorAll(`[data-pick="${col}:${CSS.escape(id)}"]`).forEach(b => { b.innerHTML = ownerBtnInner(name); b.classList.toggle('none', !hasOwner(name)); });
+  closePicker(); toast(name ? `${name} er ansvarlig` : 'Ansvarlig fjernet'); deferred = false; scheduleRender();
+});
+document.addEventListener('mousedown', e => { if (pick && !pop.contains(e.target) && !e.target.closest('[data-pick]')) closePicker(); });
+window.addEventListener('resize', placePicker); document.addEventListener('scroll', () => pick && placePicker(), true);
+
+/* ---------- Kolonner på tavla ---------- */
+function setCols(next, rerenderDrawer) {
+  if (!S.board) S.board = { columns: [] };
+  S.board.columns = next.map(c => Object.assign({}, c));
+  patch('board', 'main', { columns: S.board.columns }, true);
+  if (rerenderDrawer && UI.drawer && UI.drawer.kind === 'board') openDrawer('board', 'main');
+}
+function moveCol(cid, dir) { const cs = cols().slice(); const i = cs.findIndex(c => c.id === cid), j = i + dir; if (i < 0 || j < 0 || j >= cs.length) return; [cs[i], cs[j]] = [cs[j], cs[i]]; setCols(cs, true); }
+function addCol() { const cs = cols().slice(); const id = 'c' + Date.now().toString(36); cs.push({ id, title: 'Ny kolonne', kind: 'doing', color: COL_PAL[cs.length % COL_PAL.length] }); setCols(cs, true); toast('Kolonne lagt til. Klikk navnet for å endre det.'); setTimeout(() => { const el = document.querySelector(`[data-colname="${id}"]`); el && (el.focus(), el.select()); }, 80); }
+function delCol(cid) {
+  const cs = cols(); if (cs.length < 2) { toast('Tavla må ha minst én kolonne'); return; }
+  const i = cs.findIndex(c => c.id === cid); const to = cs[i === 0 ? 1 : i - 1];
+  allTasks().filter(t => tCol(t).id === cid).forEach(t => patch('task', t.id, { status: to.id }, true));
+  setCols(cs.filter(c => c.id !== cid), true); toast(`Kolonnen er slettet. Oppgavene ble flyttet til «${to.title}».`);
+}
+function boardHtml() {
+  const cs = cols(); const dis = canWrite ? '' : ' disabled';
+  return head('Tavle', 'Kolonner') + `<div class="dr-b">
+    <p class="muted" style="margin:0;font-size:13px">Gi kolonnene egne navn, endre rekkefølgen og legg til flere. «Betyr» forteller verktøyet hva kolonnen står for, slik at oversikten teller ferdige og blokkerte oppgaver riktig.</p>
+    ${cs.map((c, i) => { const n = allTasks().filter(t => tCol(t).id === c.id).length; return `<div class="colrow" style="--sc:${colColor(c)}">
+      <div class="colrow-h"><span class="mv"><button data-colmove="${esc(c.id)}" data-dir="-1" aria-label="Flytt opp"${i === 0 ? ' disabled' : ''}>↑</button><button data-colmove="${esc(c.id)}" data-dir="1" aria-label="Flytt ned"${i === cs.length - 1 ? ' disabled' : ''}>↓</button></span>
+      <input id="cn-${i}" data-cedit="${esc(c.id)}" data-ck="title" value="${esc(c.title)}" aria-label="Navn"${dis}>
+      <span class="faint num" style="font-size:12px;white-space:nowrap">${n} oppg.</span></div>
+      <div class="colrow-b"><label for="ck-${i}" class="faint" style="font-size:12px">Betyr</label><select id="ck-${i}" data-cedit="${esc(c.id)}" data-ck="kind"${dis}>${KINDS.map(([k, l]) => `<option value="${k}"${k === c.kind ? ' selected' : ''}>${l}</option>`).join('')}</select>
+      <span class="minisw">${COL_PAL.map(p => `<button data-ccolor="${esc(c.id)}" data-c="${p}" style="--sw:${p}" aria-pressed="${colColor(c) === p}" aria-label="Farge"></button>`).join('')}</span>
+      <button class="btn ghost danger" data-coldel="${esc(c.id)}" style="margin-left:auto;padding:4px 10px"${cs.length < 2 ? ' disabled' : ''}>Slett</button></div></div>`; }).join('')}
+    ${canWrite ? '<button class="btn" data-addcol style="justify-self:start">+ Legg til kolonne</button>' : ''}
+    <p class="faint" style="font-size:12px;margin:0">Sletter du en kolonne med oppgaver, flyttes oppgavene til kolonnen før den.</p>
+  </div>` + `<div class="dr-f"><span class="grow"></span><span class="faint">Endringer lagres automatisk og gjelder for alle</span></div>`;
+}
+
+/* ---------- Skriving ---------- */
+const writeQ = {};
+function patch(col, id, p, immediate) {
+  if (!canWrite) return;
+  if (col === 'board' && !S.board) S.board = { columns: [] };
+  const target = col === 'meta' ? S.meta : col === 'board' ? S.board : S[col][id]; if (!target) return;
+  Object.assign(target, p);
+  const k = col + '/' + id; const q = writeQ[k] || (writeQ[k] = { p: {}, busy: false, t: null, col, id });
+  Object.assign(q.p, p); clearTimeout(q.t);
+  q.t = setTimeout(() => flush(k), immediate ? 0 : 450);
+  scheduleRender();
+}
+async function flush(k) {
+  const q = writeQ[k]; if (!q || q.busy) return;
+  clearTimeout(q.t);
+  const p = q.p; q.p = {}; if (!Object.keys(p).length) return;
+  p.updatedAt = new Date().toISOString(); if (meId) p.updatedBy = meId;
+  const tgt = q.col === 'meta' ? S.meta : q.col === 'board' ? S.board : S[q.col][q.id]; if (tgt) { tgt.updatedAt = p.updatedAt; }
+  if (!db) return;
+  q.busy = true; setSync('saving');
+  try {
+    const ref = q.col === 'meta' ? db.doc('meta/strategy') : q.col === 'board' ? db.doc('meta/board') : db.collection(COLS[q.col]).doc(q.id);
+    if (q.col === 'meta' || q.col === 'board') { const cur = Object.assign({}, q.col === 'meta' ? S.meta : S.board); delete cur.id; await ref.set(cur); } else await ref.update(p);
+    setSync('live');
+  } catch (e) { handleWriteErr(e); }
+  finally { q.busy = false; if (Object.keys(q.p).length) flush(k); }
+}
+function flushAll() { Object.keys(writeQ).forEach(flush); }
+function handleWriteErr(e) {
+  const c = e && e.code;
+  if (c === 'invalid_argument' && !Object.keys(writeQ).some(k => writeQ[k].busy)) { /* trolig ikke skrivetilgang */ }
+  setSync('err', c === 'quota_exceeded' ? 'Lagringen er full' : 'Kunne ikke lagre. Sjekk nettet og prøv igjen.');
+}
+async function create(col, data) {
+  data.createdAt = data.updatedAt = new Date().toISOString(); if (meId) data.updatedBy = meId;
+  let id;
+  if (db) { const ref = db.collection(COLS[col]).doc(); id = ref.id; S[col][id] = Object.assign({ id }, data); scheduleRender(); setSync('saving'); try { await ref.set(data); setSync('live'); } catch (e) { handleWriteErr(e); } }
+  else { id = 'l' + Math.random().toString(36).slice(2, 9); S[col][id] = Object.assign({ id }, data); scheduleRender(); }
+  return id;
+}
+async function remove(col, id) {
+  const d = S[col][id]; if (!d) return;
+  delete S[col][id]; scheduleRender();
+  if (db) { try { await db.collection(COLS[col]).doc(id).delete(); } catch (e) { handleWriteErr(e); } }
+}
+const nextNum = (list, re) => list.reduce((m, x) => { const r = re.exec(x.code || ''); return r ? Math.max(m, +r[1]) : m; }, 0) + 1;
+async function addObj() { const n = nextNum(Object.values(S.obj), /^O(\d+)/); const t = today(); const end = new Date(t.getFullYear(), Math.floor(t.getMonth()/3)*3 + 3, 0); const id = await create('obj', { code: 'O' + n, title: 'Nytt Objective', owner: '', status: 'Utkast', start: iso(new Date(t.getFullYear(), Math.floor(t.getMonth()/3)*3, 1)), end: iso(end), sp: [] }); UI.exp.set(id, true); openDrawer('obj', id); }
+async function addKr(objId) { const o = S.obj[objId]; if (!o) return; const on = (/^O(\d+)/.exec(o.code) || [,'']) [1]; const n = nextNum(krsOf(objId), /\.(\d+)$/); const id = await create('kr', { code: 'KR' + on + '.' + n, objId, title: 'Nytt Key Result', type: 'Committed', owner: '', baseline: null, current: null, target: null, unit: '', status: 'Ikke vurdert', leading: '', source: '' }); UI.exp.set(objId, true); openDrawer('kr', id); }
+function focusLink() { const o = UI.focus && S.obj[UI.focus]; if (!o) return {}; return UI.focusKr && S.kr[UI.focusKr] ? { krId: UI.focusKr } : { objId: o.id }; }
+async function addTask(opts) {
+  opts = opts || {};
+  const n = nextNum(Object.values(S.task), /^T(\d+)/);
+  const kr = opts.krId && S.kr[opts.krId];
+  const defOwner = opts.owner != null ? opts.owner : (UI.person && !UI.person.startsWith('__') ? UI.person : (UI.person === '__me' ? meName : ''));
+  const data = { code: 'T' + String(n).padStart(3, '0'), title: opts.title || 'Ny oppgave', owner: defOwner, start: '', due: '', status: opts.status || cols()[0].id, priority: 'P2', next: '', comment: '', krId: kr ? opts.krId : null, objId: kr ? kr.objId : (opts.objId || null) };
+  const id = await create('task', data);
+  if (kr) UI.exp.set(opts.krId, true);
+  if (!opts.silent) openDrawer('task', id);
+  return id;
+}
+
+/* ---------- Synk ---------- */
+const syncEl = $('#sync');
+function setSync(state, msg) {
+  mode = state;
+  syncEl.className = 'sync ' + (({ live: 'live', saving: 'saving', err: 'err' })[state] || '');
+  const txt = { live: 'Lagret · live', saving: 'Lagrer…', err: msg || 'Feil', readonly: 'Lesetilgang', offline: 'Ikke tilkoblet', slow: 'Venter på data…', demo: 'Forhåndsvisning', connecting: 'Kobler til…' }[state];
+  syncEl.querySelector('span').textContent = txt;
+}
+function toast(t) { const el = $('#toast'); el.textContent = t; clearTimeout(toast.t); toast.t = setTimeout(() => el.textContent = '', 2600); }
+
+/* ---------- Render ---------- */
+let rq = null, deferred = false;
+function scheduleRender() { if (rq) return; rq = requestAnimationFrame(() => { rq = null; render(); }); }
+function personLabel() { return UI.person === '__me' ? 'meg' : UI.person === '__none' ? 'uten ansvarlig' : UI.person; }
+function renderPersonSel() {
+  const sel = $('#person'); const ps = people();
+  if (UI.person && !UI.person.startsWith('__') && !ps.includes(UI.person)) ps.push(UI.person);
+  sel.innerHTML = `<option value="">Alle personer</option>${meName ? '<option value="__me">Bare meg</option>' : ''}${ps.map(p => `<option value="${esc(p)}">${esc(p)}</option>`).join('')}<option value="__none">Uten eier</option>`;
+  sel.value = UI.person;
+  let dl = $('#dl-people'); if (!dl) { dl = document.createElement('datalist'); dl.id = 'dl-people'; document.body.appendChild(dl); }
+  const all = new Set(ps); if (meName) all.add(meName);
+  dl.innerHTML = [...all].map(p => `<option value="${esc(p)}"></option>`).join('');
+}
+function render() {
+  const main = $('#main');
+  const ae = document.activeElement;
+  if (ae && main.contains(ae) && /INPUT|SELECT|TEXTAREA/.test(ae.tagName) && ae.type !== 'search' && !ae.closest('.qadd')) { deferred = true; return; }
+  const qaddId = ae && ae.closest && ae.closest('.qadd') ? ae.id : null;
+  if (!Object.values(loaded).every(Boolean) && mode !== 'demo') return;
+  const tl = $('#tlScroll'); if (tl) UI.tlScroll = { l: tl.scrollLeft, t: tl.scrollTop };
+  const searchFocused = ae && ae.id === 'search'; const caret = searchFocused ? ae.selectionStart : 0;
+  renderPersonSel();
+  document.querySelectorAll('nav.tabs a').forEach(a => { if (a.dataset.view === UI.view) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
+  main.innerHTML = ({ oversikt: viewOversikt, mine: viewMine, okr: viewOkr, tidslinje: viewTidslinje, tavle: viewTavle }[UI.view] || viewOversikt)();
+  if (UI.view === 'tidslinje') {
+    const s = $('#tlScroll');
+    if (UI.tlScroll) { s.scrollLeft = UI.tlScroll.l; s.scrollTop = UI.tlScroll.t; } else scrollToday();
+  }
+  if (searchFocused) { const s = $('#search'); s.focus(); s.setSelectionRange(caret, caret); }
+  if (qaddId) { const q = document.getElementById(qaddId); q && q.focus(); }
+  if (UI.drawer && UI.drawer.kind === 'kr') { const q = $('#qa'); const d = S.kr[UI.drawer.id]; if (q && d) q.innerHTML = qaHtml(d); }
+}
+function scrollToday() { const s = $('#tlScroll'), t = s && s.querySelector('.tl-today'); if (s && t) s.scrollLeft = Math.max(0, t.offsetLeft - 440 - 160); }
+function route() {
+  const h = (location.hash || '').slice(1);
+  UI.view = ['oversikt','mine','okr','tidslinje','tavle'].includes(h) ? h : 'oversikt';
+  UI.tlScroll = null;
+  document.querySelectorAll('nav.tabs a').forEach(a => { if (a.dataset.view === UI.view) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
+  render(); window.scrollTo(0, 0);
+}
+
+/* ---------- Hendelser ---------- */
+document.addEventListener('click', e => {
+  const t = e.target;
+  const tg = t.closest('[data-toggle]'); if (tg) { const id = tg.dataset.toggle; const isObj = !!S.obj[id]; UI.exp.set(id, !shown(id, isObj ? 2 : 3)); render(); return; }
+  if (t.closest('[data-close]') || t === scrim) { closeDrawer(); return; }
+  const fc = t.closest('[data-focus],[data-focuskr]'); if (fc && $('#main').contains(fc)) { e.preventDefault(); e.stopPropagation(); if (fc.hasAttribute('data-focus')) { const nf = fc.dataset.focus; if (nf !== UI.focus) UI.focusKr = ''; UI.focus = nf; } if (fc.hasAttribute('data-focuskr')) UI.focusKr = fc.dataset.focuskr; UI.tlScroll = null; render(); return; }
+  const pk = t.closest('[data-pick]'); if (pk) { e.preventDefault(); e.stopPropagation(); if (pick && pick.btn === pk) closePicker(); else openPicker(pk); return; }
+  const cm = t.closest('[data-colmove]'); if (cm) { e.stopPropagation(); moveCol(cm.dataset.colmove, +cm.dataset.dir); return; }
+  if (t.closest('[data-addcol]')) { addCol(); return; }
+  const cd = t.closest('[data-coldel]'); if (cd) { delCol(cd.dataset.coldel); return; }
+  const cc = t.closest('[data-ccolor]'); if (cc) { setCols(cols().map(c => c.id === cc.dataset.ccolor ? Object.assign({}, c, { color: cc.dataset.c }) : c), true); return; }
+  const sw = t.closest('[data-swatch]'); if (sw && UI.drawer && UI.drawer.kind === 'obj' && canWrite) { patch('obj', UI.drawer.id, { color: sw.dataset.swatch }, true); dr.querySelectorAll('[data-swatch]').forEach(b => b.setAttribute('aria-pressed', b === sw)); return; }
+  const lv = t.closest('[data-level]'); if (lv) { UI.level = +lv.dataset.level; remember('fg-lvl', UI.level); UI.exp.clear(); render(); return; }
+  const ln = t.closest('[data-lanes]'); if (ln) { UI.lanes = ln.dataset.lanes === '1'; remember('fg-lanes', UI.lanes ? '1' : '0'); render(); return; }
+  const mn = t.closest('[data-mine]'); if (mn) { UI.mine = mn.dataset.mine; remember('fg-mine', UI.mine); render(); return; }
+  if (t.closest('[data-showdone]')) { UI.showDone = !UI.showDone; render(); return; }
+  const dn = t.closest('[data-done]'); if (dn) { e.stopPropagation(); toggleDone(dn.dataset.done); return; }
+  const zm = t.closest('[data-zoom]'); if (zm) { UI.zoom = zm.dataset.zoom; UI.tlScroll = null; render(); return; }
+  if (t.closest('[data-today]')) { scrollToday(); return; }
+  const add = t.closest('[data-add]'); if (add) { e.preventDefault(); const k = add.dataset.add; if (k === 'obj') addObj(); else if (k === 'kr') addKr(add.dataset.obj); else addTask({ krId: add.dataset.kr }); return; }
+  if (t.closest('[data-addprio]')) { const m = S.meta; m.priorities = (m.priorities || []).concat([{ code: 'SP' + ((m.priorities||[]).length + 1), title: '' }]); patch('meta', 'strategy', { priorities: m.priorities }, true); openDrawer('meta', 'strategy'); return; }
+  const del = t.closest('[data-del]'); if (del) { const w = $('#delWrap'); const u = UI.drawer; const extra = u.kind === 'obj' ? ` og ${krsOf(u.id).length} KR` : ''; w.innerHTML = `<span class="confirm"><span style="color:var(--bad)">Slette${extra}?</span><button class="btn danger" data-delyes>Ja, slett</button><button class="btn ghost" data-delno>Avbryt</button></span>`; return; }
+  if (t.closest('[data-delno]')) { $('#delWrap').innerHTML = '<button class="btn danger" data-del>Slett</button>'; return; }
+  if (t.closest('[data-delyes]')) { const u = UI.drawer; doDelete(u.kind, u.id); return; }
+  if (t.closest('select,input,textarea,a[href]')) return;
+  const go = t.closest('[data-goto-obj]'); if (go) { const id = go.dataset.gotoObj; UI.exp.set(id, true); location.hash = 'okr'; setTimeout(() => { const r = document.getElementById('row-' + id); r && r.scrollIntoView({ block: 'start', behavior: 'smooth' }); }, 50); return; }
+  const op = t.closest('[data-open]'); if (op) { const [k, ...rest] = op.dataset.open.split(':'); openDrawer(k, rest.join(':')); }
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && pick) { closePicker(); return; }
+  if (e.key === 'Escape' && UI.drawer) { closeDrawer(); return; }
+  const go = e.target.closest && e.target.closest('[data-goto-obj]'); if (go && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); go.click(); return; }
+  if (/INPUT|SELECT|TEXTAREA/.test(e.target.tagName) || e.metaKey || e.ctrlKey || e.altKey || UI.drawer) return;
+  const v = { '1': 'oversikt', '2': 'mine', '3': 'okr', '4': 'tidslinje', '5': 'tavle' }[e.key]; if (v) { location.hash = v; return; }
+  if ((e.key === 'n' || e.key === 'N') && canWrite) { e.preventDefault(); addTask(focusLink()); }
+});
+async function doDelete(kind, id) {
+  if (kind === 'obj') { for (const k of krsOf(id)) await remove('kr', k.id); for (const t of allTasks().filter(t => t.objId === id)) patch('task', t.id, { objId: null, krId: null }, true); await remove('obj', id); }
+  else if (kind === 'kr') { for (const t of allTasks().filter(t => t.krId === id)) patch('task', t.id, { krId: null }, true); await remove('kr', id); }
+  else await remove('task', id);
+  toast('Slettet'); closeDrawer();
+}
+// Skjema i skuffen
+dr.addEventListener('input', onField); dr.addEventListener('change', onField);
+function onField(e) {
+  const el = e.target, u = UI.drawer; if (!u || !canWrite) return;
+  if (u.kind === 'board') { if (!el.dataset.cedit) return; if (el.tagName === 'SELECT' && e.type !== 'change') return; const k = el.dataset.ck; setCols(cols().map(c => c.id === el.dataset.cedit ? Object.assign({}, c, { [k]: k === 'title' ? (el.value.trim() || c.title) : el.value }) : c), k === 'kind' && e.type === 'change'); return; }
+  if (u.kind === 'meta') {
+    if (el.dataset.f) patch('meta', 'strategy', { [el.dataset.f]: el.value });
+    else if (el.dataset.prio != null) { const ps = (S.meta.priorities || []).map(p => Object.assign({}, p)); ps[+el.dataset.prio][el.dataset.pk] = el.value; patch('meta', 'strategy', { priorities: ps }); }
+    return;
+  }
+  const col = u.kind;
+  if (el.hasAttribute('data-link')) { if (e.type !== 'change') return; const [k, id] = el.value.split(':'); patch(col, u.id, k === 'kr' ? { krId: id, objId: S.kr[id].objId } : k === 'obj' ? { krId: null, objId: id } : { krId: null, objId: null }, true); return; }
+  const f = el.dataset.f; if (!f) return;
+  if (f === 'sp') { if (e.type !== 'change') return; patch(col, u.id, { sp: [...dr.querySelectorAll('[data-f="sp"]:checked')].map(c => c.value) }, true); return; }
+  let v = el.value;
+  if (el.hasAttribute('data-num')) v = num(v);
+  if (el.tagName === 'SELECT' && e.type !== 'change') return;
+  const p = { [f]: v };
+  if (f === 'current' && col === 'kr') p.valueDate = iso(today());
+  if (f === 'current' && col === 'kr') { const vd = $('#f-vd'); if (vd) vd.value = p.valueDate; }
+  patch(col, u.id, p, el.tagName === 'SELECT');
+}
+// Hurtigendringer i hovedvisningen
+document.getElementById('main').addEventListener('change', e => {
+  const el = e.target;
+  if (el.dataset.colname) { const v = el.value.trim(); if (v) setCols(cols().map(c => c.id === el.dataset.colname ? Object.assign({}, c, { title: v }) : c)); else el.value = colOf(el.dataset.colname).title; el.blur(); toast('Kolonnenavn lagret'); return; }
+  if (el.dataset.quick) { const col = el.dataset.quick; patch(col, el.dataset.id, { status: el.value }, true); if (col === 'task') el.setAttribute('style', pillStyle(colOf(el.value))); else el.className = 'pill ' + (col === 'kr' ? krCls(el.value) : 'st-none'); el.blur(); return; }
+  if (el.dataset.inl) {
+    const col = el.dataset.inl, f = el.dataset.f; if (!S[col] || !S[col][el.dataset.id]) return;
+    let v = el.hasAttribute('data-num') ? num(el.value) : el.value.trim();
+    const p = { [f]: v }; if (col === 'kr' && f === 'current') p.valueDate = iso(today());
+    patch(col, el.dataset.id, p, true);
+    if (el.type === 'date') el.classList.toggle('empty', !v);
+    toast(({ owner: 'Ansvarlig lagret', due: 'Frist lagret', start: 'Startdato lagret', end: 'Periode lagret', current: 'Nåverdi lagret', baseline: 'Baseline lagret', target: 'Mål lagret', next: 'Neste handling lagret', unit: 'Enhet lagret' })[f] || 'Lagret');
+    return;
+  }
+});
+document.getElementById('main').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && (e.target.dataset.inl || e.target.dataset.colname) && e.target.type !== 'date') { e.preventDefault(); e.target.blur(); return; }
+  if ((e.key === 'Enter' || e.key === ' ') && e.target.classList && e.target.classList.contains('kcard')) { e.preventDefault(); const [k, ...r] = e.target.dataset.open.split(':'); openDrawer(k, r.join(':')); }
+});
+document.getElementById('main').addEventListener('input', e => { if (e.target.id === 'search') { UI.q = e.target.value; render(); } });
+document.getElementById('main').addEventListener('submit', e => {
+  const f = e.target.closest('[data-qadd]'); if (!f) return; e.preventDefault();
+  const inp = f.querySelector('input'); const title = inp.value.trim(); if (!title) return;
+  inp.value = '';
+  addTask(Object.assign({ title, status: f.dataset.qadd, silent: true }, f.dataset.qobj ? { objId: f.dataset.qobj } : focusLink())).then(() => { toast('Oppgave lagt til. Klikk kortet for å sette frist og kobling.'); setTimeout(() => { const n = document.getElementById(inp.id); n && n.focus(); }, 30); });
+});
+document.addEventListener('focusout', () => { if (deferred) setTimeout(() => { const ae = document.activeElement; if (!(ae && $('#main').contains(ae) && /INPUT|SELECT|TEXTAREA/.test(ae.tagName))) { deferred = false; render(); } }, 0); });
+// Dra og slipp
+let dragId = null;
+document.addEventListener('dragstart', e => { const c = e.target.closest && e.target.closest('[data-card]'); if (!c || !canWrite) return; dragId = c.dataset.card; c.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', dragId); } catch (x) {} });
+document.addEventListener('dragend', e => { const c = e.target.closest && e.target.closest('[data-card]'); c && c.classList.remove('dragging'); document.querySelectorAll('.col.drop').forEach(x => x.classList.remove('drop')); });
+document.addEventListener('dragover', e => { const col = e.target.closest && e.target.closest('[data-col]'); if (!col || !dragId) return; e.preventDefault(); document.querySelectorAll('.col.drop').forEach(x => x !== col && x.classList.remove('drop')); col.classList.add('drop'); });
+document.addEventListener('drop', e => { const col = e.target.closest && e.target.closest('[data-col]'); if (!col || !dragId) return; e.preventDefault(); const st = col.dataset.col; const t = S.task[dragId]; if (t && t.status !== st) { patch('task', dragId, { status: st }, true); if (colOf(st).kind === 'done') toast('Ferdig. Bra jobbet.'); } dragId = null; col.classList.remove('drop'); });
+$('#person').addEventListener('change', e => { UI.person = e.target.value; try { localStorage.setItem('fg-person', UI.person); } catch (x) {} render(); });
+$('#helpBtn').addEventListener('click', () => openDrawer('help'));
+window.addEventListener('hashchange', route);
+
+/* ---------- Oppstart ---------- */
+function applySnap(col, snap) {
+  const next = {};
+  snap.docs.forEach(d => { if (d.exists) next[d.id] = Object.assign({ id: d.id }, d.data()); });
+  Object.keys(writeQ).forEach(k => { const q = writeQ[k]; if (q.col === col && next[q.id] && Object.keys(q.p).length) Object.assign(next[q.id], q.p); });
+  S[col] = next; loaded[col] = true;
+  if (UI.drawer && UI.drawer.kind === col && !next[UI.drawer.id]) closeDrawer();
+  scheduleRender();
+}
+async function init() {
+  route();
+  if (window.__FIGMENT_DEMO) {
+    const D = window.__FIGMENT_DEMO; meName = D.me || '';
+    Object.entries(D.data).forEach(([p, v]) => { const [c, id] = p.split('/'); const col = { objectives: 'obj', krs: 'kr', tasks: 'task' }[c]; if (c === 'meta') S.meta = Object.assign({ id }, JSON.parse(JSON.stringify(v))); else S[col][id] = Object.assign({ id }, JSON.parse(JSON.stringify(v))); });
+    canWrite = true; Object.keys(loaded).forEach(k => loaded[k] = true); setSync('demo'); loadTeam(); if (D.view) location.hash = D.view; render(); return;
+  }
+  const slow = setTimeout(() => { if (!Object.values(loaded).every(Boolean)) { setSync('slow'); $('#main').innerHTML = '<div class="skeleton">Får ikke kontakt med lagringen ennå. Sjekk nettforbindelsen. Siden oppdaterer seg selv når den får svar.</div>'; } }, 10000);
+  const use = window.claude && window.claude.use ? n => window.claude.use(n).catch(() => null) : async () => null;
+  [db, user] = await Promise.all([use('db'), use('user')]);
+  if (!db) {
+    clearTimeout(slow); setSync('offline');
+    $('#banner').textContent = 'Lagringen er ikke tilgjengelig i denne visningen. Last siden på nytt og logg inn med Figment-kontoen din.';
+    $('#main').innerHTML = '<div class="skeleton">Ingen data å vise her.</div>';
+    return;
+  }
+  if (user) {
+    try { meId = await user.id(); } catch (e) {}
+    try { const me = await user.me(); meName = (me && me.name) || ''; } catch (e) {}
+    try { const cw = await user.can('data.write'); canWrite = cw !== false; } catch (e) { canWrite = true; }
+    try { if (!canWrite && await user.isOwner()) canWrite = true; } catch (e) {}
+  } else canWrite = true;
+  loadTeam();
+  const done = () => { if (Object.values(loaded).every(Boolean)) { clearTimeout(slow); setSync(canWrite ? 'live' : 'readonly'); if (!canWrite) $('#banner').textContent = 'Du har lesetilgang. Kontakt Torstein for å få redigeringstilgang.'; } };
+  const err = e => { clearTimeout(slow); if (e && e.code === 'revoked') { setSync('offline'); return; } setSync('err', 'Mistet kontakt med lagringen'); };
+  db.collection('objectives').onSnapshot(s => { applySnap('obj', s); done(); }, err);
+  db.collection('krs').onSnapshot(s => { applySnap('kr', s); done(); }, err);
+  db.collection('tasks').onSnapshot(s => { applySnap('task', s); done(); }, err);
+  db.doc('meta/board').onSnapshot(d => { if (!writeQ['board/main'] || !Object.keys(writeQ['board/main'].p).length) S.board = d.exists ? Object.assign({ id: 'board' }, d.data()) : null; loaded.board = true; done(); if (!(UI.drawer && UI.drawer.kind === 'board' && dr.contains(document.activeElement))) { if (UI.drawer && UI.drawer.kind === 'board') openDrawer('board', 'main'); } scheduleRender(); }, err);
+  db.doc('meta/strategy').onSnapshot(d => { if (!writeQ['meta/strategy'] || !Object.keys(writeQ['meta/strategy'].p).length) S.meta = d.exists ? Object.assign({ id: 'strategy' }, d.data()) : { vision: '', horizon: '', priorities: [] }; loaded.meta = true; done(); scheduleRender(); }, err);
+}
+(window.__okrReady || Promise.resolve()).then(init);
+})();
+</script>
+</body>
+</html>
+
